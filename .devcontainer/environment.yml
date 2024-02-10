@@ -1,0 +1,19 @@
+name: py_env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - autopep8=1.6
+  - black=22.6
+  - flake8=4.0
+  - flake8-docstrings=1.7
+  - isort=5.9
+  - ipykernel=6.15
+  - matplotlib=3.5
+  - numpy=1.21
+  - openpyxl=3.1
+  - pandas=1.4
+  - pip=21.2
+  - python=3.8
+  - pygments=2.11
+  - sqlalchemy=2.0
