@@ -7,8 +7,10 @@ dependencies:
   - black=22.6
   - flake8=4.0
   - flake8-docstrings=1.7
+  - flask=3.0.2
   - isort=5.9
   - ipykernel=6.15
+  - kafka=1.3.5
   - matplotlib=3.5
   - numpy=1.21
   - openpyxl=3.1
