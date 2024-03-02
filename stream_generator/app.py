@@ -12,10 +12,11 @@ from .voltage_simulator import VoltageSensorSimulator
 
 app = Flask(__name__)
 
-KAFKA_SERVER = 'localhost:9092'
+KAFKA_SERVER = 'kafka:9092'
 TOPIC = 'motor_voltage'
 
 producer = KafkaProducer(bootstrap_servers=[KAFKA_SERVER])
+
 
 def send_sensor_values():
     """Send sensor values."""
@@ -79,7 +80,7 @@ def start_generating_values():
     thread = threading.Thread(target=send_sensor_values)
     thread.daemon = True
     thread.start()
-    return jsonify({'message': 'Sending weather updates started'})
+    return jsonify({'message': 'Streaming data started'})
 
 
 if __name__ == '__main__':
