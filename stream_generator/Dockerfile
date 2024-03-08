@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install kafka-python flask
+RUN pip install confluent_kafka flask
 
 EXPOSE 5001
 

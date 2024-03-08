@@ -16,19 +16,24 @@ services:
     ports:
       - "5000:5000"
     depends_on:
+      - kafka
       - stream_generator
-      - raw_data_handler
+      - data_handler
 
   stream_generator:
     build:
       context: ./stream_generator
     ports:
       - "5001:5001"
+    depends_on:
+      - kafka
 
-  raw_data_handler:
+  data_handler:
     build:
-      context: ./raw_data_handler
+      context: ./data_handler
     ports:
       - "5002:5002"
+    depends_on:
+      - kafka
     volumes:
       - ./data:/app/data
