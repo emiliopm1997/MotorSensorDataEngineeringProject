@@ -1,4 +1,4 @@
-from kafka import KafkaConsumer
+from confluent_kafka import Consumer
 from flask import Flask
 from pathlib import Path
 
@@ -18,7 +18,7 @@ def save_to_data_lake():
     db = DataLakeHandler(DL_PATH)
     table_name = "MOTOR_READINGS"
 
-    consumer = KafkaConsumer(TOPIC, bootstrap_servers=[KAFKA_SERVER])
+    consumer = Consumer(TOPIC, bootstrap_servers=[KAFKA_SERVER])
 
     for _ in range(5):
         msg = consumer.poll(max_records=1000)

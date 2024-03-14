@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install confluent_kafka flask
+RUN pip install confluent_kafka flask numpy
 
 EXPOSE 5001
 

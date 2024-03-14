@@ -1,3 +1,2 @@
 confluent_kafka==2.3.0
-flask==2.1.4
-sqlite3
+flask==2.1.3
