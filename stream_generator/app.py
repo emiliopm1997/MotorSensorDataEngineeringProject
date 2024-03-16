@@ -4,7 +4,7 @@ import pandas as pd
 import threading
 import time
 
-from kafka import KafkaProducer
+from confluent_kafka import Producer
 from flask import Flask, jsonify
 
 from .helper_functions import ts_to_unix, unix_to_ts
@@ -15,7 +15,7 @@ app = Flask(__name__)
 KAFKA_SERVER = 'kafka:9092'
 TOPIC = 'motor_voltage'
 
-producer = KafkaProducer(bootstrap_servers=[KAFKA_SERVER])
+producer = Producer(bootstrap_servers=[KAFKA_SERVER])
 
 
 def send_sensor_values():
