@@ -13,8 +13,8 @@ TOPIC = 'motor_voltage'
 DL_PATH = Path('data/raw_data.db')
 
 
-@app.route('/save_to_data_lake', methods=['GET'])
-def save_to_data_lake():
+@app.route('/save_raw_data', methods=['GET'])
+def save_raw_data():
     db = DataLakeHandler(DL_PATH)
     table_name = "MOTOR_READINGS"
 
