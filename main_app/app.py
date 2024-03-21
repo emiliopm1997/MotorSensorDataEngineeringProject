@@ -1,4 +1,5 @@
 from flask import Flask, jsonify
+import json
 import requests
 
 app = Flask(__name__)
@@ -15,7 +16,8 @@ def start_pipeline():
     requests.get(STREAM_GENERATOR_URL)
 
     # Validate credentials.
-    credentials = {'username': 'user123', 'password': 'pass123'}
+    with open('config.json', 'r') as json_file:
+        credentials = json.load(json_file)
     validation_results = requests.post(
         VALIDATE_CREDENTIALS_URL, json=credentials
     )

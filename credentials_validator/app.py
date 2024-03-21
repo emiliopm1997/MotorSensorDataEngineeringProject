@@ -1,10 +1,7 @@
 from flask import Flask, request, jsonify
+import json
 
 app = Flask(__name__)
-
-# Hardcoded credentials for demonstration purposes
-valid_username = 'user123'
-valid_password = 'pass123'
 
 
 @app.route('/validate', methods=['POST'])
@@ -13,6 +10,12 @@ def validate():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
+
+    with open('config.json', 'r') as json_file:
+        true_credentials = json.load(json_file)
+
+    valid_username = true_credentials["username"]
+    valid_password = true_credentials["password"]
 
     if username == valid_username and password == valid_password:
         response = {'message': 'Login successful', 'status_code': 200}
