@@ -24,7 +24,10 @@ class AbstractDBHandler(ABC):
 
         # Check if db exists, if not set template.
         if (not db_path.exists()) or set_structure:
-            self.cur.execute(self.db_template)
+            if isinstance(self.db_template, str):
+                self.db_template = [self.db_template]
+            for table in self.db_template:
+                self.cur.execute(table)
 
     def insert(self, table: str, values: str):
         """Insert values to table.
@@ -108,3 +111,54 @@ class DataLakeHandler(AbstractDBHandler):
             voltage FLOAT NOT NULL
         );
     """
+
+
+class DataWarehouseHandler(AbstractDBHandler):
+    """Handler of database for preprocessed data.
+
+    Attributes
+    ----------
+
+    latest_cycle_time : float
+        The latest time that has been used to cut a cycle.
+    """
+    db_template = [
+        """
+            CREATE TABLE CYCLES (
+                unix_time FLOAT NOT NULL PRIMARY KEY,
+                date_time VARCHAR(30) NOT NULL,
+                cycle_id INTEGER NOT NULL,
+                voltage FLOAT NOT NULL
+            );
+        """,
+        """
+            CREATE TABLE METRICS (
+                cycle_id INTEGER NOT NULL PRIMARY KEY,
+                ref_unix_time FLOAT NOT NULL,
+                ref_date_time VARCHAR(30) NOT NULL,
+                metric_name VARCHAR(30) NOT NULL,
+                metric_value FLOAT NOT NULL
+            );
+
+        """
+    ]
+
+    @property
+    def latest_cycle_time(self) -> float:
+        """Get the last time value considered for the cycles."""
+        additionals = "ORDER BY unix_time DESC LIMIT 1"
+        data = self.select("unix_time", "CYCLES", additionals)
+        if len(data) == 0:
+            return None
+
+        return data.loc[0].values[0]
+
+    @property
+    def latest_cycle_id(self) -> int:
+        """Get the last id value considered for the cycles."""
+        additionals = "ORDER BY cycle_id DESC LIMIT 1"
+        data = self.select("cycle_id", "CYCLES", additionals)
+        if len(data) == 0:
+            return None
+
+        return data.loc[0].values[0]

@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 import unittest
 
-from data_base import DataLakeHandler
+from data_base import DataLakeHandler, DataWarehouseHandler
 
 DATA_PATH = Path(
     "/workspaces/MotorSensorDataEngineeringProject/data_handler/test/data"
@@ -51,7 +51,7 @@ class TestDataLake(TestDBHandlers):
                 i
             )
             self.data_object.insert(self.table_name, data_to_insert)
-    
+
     def test_initial_structure(self):
         """Test the structure of the db when it is created."""
         return self._test_initial_structure()
@@ -87,6 +87,72 @@ class TestDataLake(TestDBHandlers):
 
         # Check that only 3 observations remained.
         self.assertEqual(len(res_data), 3)
+
+
+class TestDataWarehouse(TestDBHandlers):
+    """Test data warehouse handler."""
+
+    data_class = DataWarehouseHandler
+    prefix = "data_warehouse_"
+
+    def _insert_cycles_test_data(self):
+        start = 1710811768
+
+        for i in range(5):
+            unix = start + i
+            data_to_insert = (
+                unix,
+                str(pd.to_datetime(unix, unit='s')),
+                i,
+                i * 1.34
+            )
+            self.data_object.insert("CYCLES", data_to_insert)
+        
+    def test_initial_structure_cycles_table(self):
+        """Test the structure of the CYCLES table when db is created."""
+        self.table_cols = ["unix_time", "date_time", "cycle_id", "voltage"]
+        self.table_name = "CYCLES"
+        return self._test_initial_structure()
+
+    def test_initial_structure_metrics_table(self):
+        """Test the structure of the METRICS table when db is created."""
+        self.table_cols = [
+            "cycle_id", "ref_unix_time", "ref_date_time",
+            "metric_name", "metric_value"
+        ]
+        self.table_name = "METRICS"
+        return self._test_initial_structure()
+
+    def test_latest_cycle_data_non_empty(self):
+        """Test latest_cycle_time is correct when table isn't empty."""
+        self._insert_cycles_test_data()
+        self.assertAlmostEqual(
+            self.data_object.latest_cycle_time, 1710811772, places=3
+        )
+
+    def test_latest_cycle_data_empty(self):
+        """Test latest_cycle_time is correct when table is empty."""
+        self.assertFalse(self.data_object.latest_cycle_time)
+
+    def test_latest_cycle_time_data_non_empty(self):
+        """Test latest_cycle_time is correct when table isn't empty."""
+        self._insert_cycles_test_data()
+        self.assertAlmostEqual(
+            self.data_object.latest_cycle_time, 1710811772, places=3
+        )
+
+    def test_latest_cycle_time_data_empty(self):
+        """Test latest_cycle_time is correct when table is empty."""
+        self.assertFalse(self.data_object.latest_cycle_time)
+
+    def test_latest_cycle_id_data_non_empty(self):
+        """Test latest_cycle_id is correct when table isn't empty."""
+        self._insert_cycles_test_data()
+        self.assertEqual(self.data_object.latest_cycle_id, 4)
+
+    def test_latest_cycle_id_data_empty(self):
+        """Test latest_cycle_id is correct when table is empty."""
+        self.assertFalse(self.data_object.latest_cycle_id)
 
 
 if __name__ == '__main__':
