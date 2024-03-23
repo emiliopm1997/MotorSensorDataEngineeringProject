@@ -65,17 +65,19 @@ def preprocess_data():
         cycles_dict = requests.post(
             PREPROCESSOR_URL.format("calculate_cycles"), data=cycle_info
         )
+        cut_cycle_info = dict()
+        cut_cycle_info["data"] = cycles_dict.json()["data"]
 
         # Calculate metrics.
         metrics_dict = requests.post(
-            PREPROCESSOR_URL.format("calculate_metrics"), data=cycles_dict.json()
+            PREPROCESSOR_URL.format("calculate_metrics"), data=cut_cycle_info
         )
 
         # Save data.
-        pd.DataFrame(cycles_dict.json()).to_sql(
+        pd.DataFrame(cycles_dict.json()["data"]).to_sql(
             "CYCLES", dw.conn, if_exists="append", index=False
         )
-        pd.DataFrame(metrics_dict.json()).to_sql(
+        pd.DataFrame(metrics_dict.json()["data"]).to_sql(
             "METRICS", dw.conn, if_exists="append", index=False
         )
 
