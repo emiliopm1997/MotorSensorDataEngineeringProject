@@ -1,6 +1,7 @@
 from confluent_kafka import Consumer
 from flask import Flask, jsonify
 from pathlib import Path
+import time
 
 import pandas as pd
 import requests
@@ -36,41 +37,47 @@ def save_raw_data():
 @app.route('/preprocess_data', methods=['GET'])
 def preprocess_data():
     """Preprocess raw data and save it."""
-    # TODO: Missing putting this in a loop.
     dl = DataLakeHandler(DL_PATH)
     dw = DataWarehouseHandler(DW_PATH)
 
-    # Prepare data for cycles.
-    cycle_info = dict()
-    latest_cycle_time = dw.latest_cycle_time
-    latest_cycle_id = dw.latest_cycle_id
-    cycle_info["cycle_id_start"] = (
-        latest_cycle_id + 1 if latest_cycle_id else 0
-    )
-    additionals = "ORDER BY unix_time DESC LIMIT 1000"
-    if latest_cycle_time:
-        additionals = f"WHERE unix_time > {latest_cycle_time} " + additionals
+    for _ in range(5):
 
-    raw_data = dl.select("*", "MOTOR_READINGS", additionals)
-    cycle_info["data"] = raw_data.to_dict("records")
+        # Prepare data for cycles.
+        cycle_info = dict()
+        latest_cycle_time = dw.latest_cycle_time
+        latest_cycle_id = dw.latest_cycle_id
+        additionals = "ORDER BY unix_time DESC LIMIT 1000"
+        if latest_cycle_time:
+            additionals = f"WHERE unix_time > {latest_cycle_time} " + additionals
 
-    # Calculate cycles.
-    cycles_dict = requests.post(
-        PREPROCESSOR_URL.format("calculate_cycles"), data=cycle_info
-    )
+        raw_data = dl.select("*", "MOTOR_READINGS", additionals)
 
-    # Calculate metrics.
-    metrics_dict = requests.post(
-        PREPROCESSOR_URL.format("calculate_metrics"), data=cycles_dict.json()
-    )
+        if len(raw_data) == 0:
+            time.sleep(5)
+            continue
 
-    # Save data.
-    pd.DataFrame(cycles_dict.json()).to_sql(
-        "CYCLES", dw.conn, if_exists="append", index=False
-    )
-    pd.DataFrame(metrics_dict.json()).to_sql(
-        "METRICS", dw.conn, if_exists="append", index=False
-    )
+        cycle_info["cycle_id_start"] = (
+            latest_cycle_id + 1 if latest_cycle_id else 0
+        )
+        cycle_info["data"] = raw_data.to_dict("records")
+
+        # Calculate cycles.
+        cycles_dict = requests.post(
+            PREPROCESSOR_URL.format("calculate_cycles"), data=cycle_info
+        )
+
+        # Calculate metrics.
+        metrics_dict = requests.post(
+            PREPROCESSOR_URL.format("calculate_metrics"), data=cycles_dict.json()
+        )
+
+        # Save data.
+        pd.DataFrame(cycles_dict.json()).to_sql(
+            "CYCLES", dw.conn, if_exists="append", index=False
+        )
+        pd.DataFrame(metrics_dict.json()).to_sql(
+            "METRICS", dw.conn, if_exists="append", index=False
+        )
 
     response = {
         'message': 'Preprocessed data is being saved...',
