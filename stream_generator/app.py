@@ -59,16 +59,16 @@ def get_voltage_data(start: pd.Timestamp, end: pd.Timestamp) -> pd.DataFrame:
     data = pd.DataFrame()
 
     # Set unix and timestamp data.
-    data["unix"] = np.linspace(
+    data["unix_time"] = np.linspace(
         ts_to_unix(start),
         ts_to_unix(end),
         1200
     )[:-1]
-    data["timestamp"] = data["unix"].apply(unix_to_ts)
+    data["date_time"] = data["unix_time"].apply(unix_to_ts)
 
     # Simulate data
     simulator = VoltageSensorSimulator()
-    data["voltage"] = simulator.simulate(data["unix"])
+    data["voltage"] = simulator.simulate(data["unix_time"])
 
     return data
 

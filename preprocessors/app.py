@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request
-from pathlib import Path
-import time
+from .cycles import CycleCutter
 
 import pandas as pd
 
@@ -13,13 +12,15 @@ def calculate_cycles():
     cycle_id_start = cycle_info["cycle_id_start"]
     data = pd.DataFrame(cycle_info["data"])
 
-    # Call preprocessor object.
-    
-    # Run preprocessor and get processed data.
-    
-    # Convert preprocessed data to dictionary and send back.
-    
-    response = {'status': 'success', 'message': 'Cycles cut successfully...'}
+    preprocessor = CycleCutter()
+    preprocessor.run(data=data, cycle_id_start=cycle_id_start)
+    preprocessed_data = preprocessor.preprocessed_data.to_dict("records")
+
+    response = {
+        "message": "Cycles cut successfully...",
+        "status_code": 200,
+        "data": preprocessed_data
+    }
     return jsonify(response)
 
 

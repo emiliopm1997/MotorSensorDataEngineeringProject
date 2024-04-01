@@ -48,7 +48,9 @@ def preprocess_data():
         latest_cycle_id = dw.latest_cycle_id
         additionals = "ORDER BY unix_time DESC LIMIT 1000"
         if latest_cycle_time:
-            additionals = f"WHERE unix_time > {latest_cycle_time} " + additionals
+            additionals = (
+                f"WHERE unix_time > {latest_cycle_time} " + additionals
+            )
 
         raw_data = dl.select("*", "MOTOR_READINGS", additionals)
 

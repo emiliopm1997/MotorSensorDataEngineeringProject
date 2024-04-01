@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 from typing import Union
@@ -35,5 +34,3 @@ def unix_to_ts(unix: Union[float, int]) -> pd.Timestamp:
         The corresponding timestamp.
     """
     return pd.to_datetime(unix, unit='s')
-
-

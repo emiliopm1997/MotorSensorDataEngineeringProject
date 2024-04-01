@@ -107,7 +107,7 @@ class TestDataWarehouse(TestDBHandlers):
                 i * 1.34
             )
             self.data_object.insert("CYCLES", data_to_insert)
-        
+
     def test_initial_structure_cycles_table(self):
         """Test the structure of the CYCLES table when db is created."""
         self.table_cols = ["unix_time", "date_time", "cycle_id", "voltage"]
