@@ -133,7 +133,8 @@ class DataWarehouseHandler(AbstractDBHandler):
         """,
         """
             CREATE TABLE METRICS (
-                cycle_id INTEGER NOT NULL PRIMARY KEY,
+                metric_id INTEGER NOT NULL PRIMARY KEY,
+                cycle_id INTEGER NOT NULL,
                 ref_unix_time FLOAT NOT NULL,
                 ref_date_time VARCHAR(30) NOT NULL,
                 metric_name VARCHAR(30) NOT NULL,

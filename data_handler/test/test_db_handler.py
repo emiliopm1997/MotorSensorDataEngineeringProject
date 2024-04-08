@@ -117,8 +117,8 @@ class TestDataWarehouse(TestDBHandlers):
     def test_initial_structure_metrics_table(self):
         """Test the structure of the METRICS table when db is created."""
         self.table_cols = [
-            "cycle_id", "ref_unix_time", "ref_date_time",
-            "metric_name", "metric_value"
+            "metric_id", "cycle_id", "ref_unix_time",
+            "ref_date_time", "metric_name", "metric_value"
         ]
         self.table_name = "METRICS"
         return self._test_initial_structure()

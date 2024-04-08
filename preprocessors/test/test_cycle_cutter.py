@@ -16,7 +16,6 @@ class TestCycleCutter(unittest.TestCase):
     def setUpClass(cls):
         """Run once before everything."""
         cls.raw_data = pd.read_csv(DATA_PATH / "raw_data_for_test.csv")
-        # cls.raw_data = raw_data.iloc[:-2, :]
 
         cls.cycle_periods = pd.read_csv(DATA_PATH / "cycle_periods.csv")
         cls.cycle_periods["cycle_start"] = cls.cycle_periods["cycle_start"]\
@@ -25,7 +24,7 @@ class TestCycleCutter(unittest.TestCase):
             .apply(pd.Timestamp)
 
         cls.preprocessed_data = pd.read_csv(
-            DATA_PATH / "preprocessed_data.csv"
+            DATA_PATH / "cut_cycles_data.csv"
         )
         cls.preprocessed_data["date_time"] = (
             cls.preprocessed_data["date_time"].apply(pd.Timestamp)

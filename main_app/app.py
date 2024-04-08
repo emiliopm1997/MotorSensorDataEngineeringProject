@@ -30,7 +30,7 @@ def start_pipeline():
 
         # Preprocess data and save it to data warehouse
         requests.get(DATA_HANDLER_URL.format("preprocess_data"))
-        
+
         # Serve data to report feeder
 
     return jsonify({'message': 'All services started'})

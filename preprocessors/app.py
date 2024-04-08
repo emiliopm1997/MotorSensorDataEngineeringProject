@@ -1,9 +1,11 @@
 from flask import Flask, jsonify, request
 from .cycles import CycleCutter
+from .metrics import MetricsCalculator
 
 import pandas as pd
 
 app = Flask(__name__)
+
 
 @app.route('/calculate_cycles', methods=['POST'])
 def calculate_cycles():
@@ -14,12 +16,17 @@ def calculate_cycles():
 
     preprocessor = CycleCutter()
     preprocessor.run(data=data, cycle_id_start=cycle_id_start)
-    preprocessed_data = preprocessor.preprocessed_data.to_dict("records")
+    preprocessed_data = preprocessor.preprocessed_data
+    preprocessed_data["date_time"] = preprocessed_data["date_time"].apply(
+        lambda x: str(x)
+    )
+
+    dict_data = preprocessed_data.to_dict("records")
 
     response = {
         "message": "Cycles cut successfully...",
         "status_code": 200,
-        "data": preprocessed_data
+        "data": dict_data
     }
     return jsonify(response)
 
@@ -30,15 +37,16 @@ def calculate_metrics():
     cut_cycle_info = request.get_json()  # Get JSON data from the request
     data = pd.DataFrame(cut_cycle_info["data"])
 
-    # Call preprocessor object.
-    
-    # Run preprocessor and get processed data.
-    
-    # Convert preprocessed data to dictionary and send back.
-    
+    preprocessor = MetricsCalculator()
+    preprocessor.run(data=data)
+    preprocessed_data = preprocessor.preprocessed_data
+
+    dict_data = preprocessed_data.to_dict("records")
+
     response = {
-        'status': 'success', 
-        'message': 'Metrics calculated successfully...'
+        "message": "Metrics calculated successfully...",
+        "status_code": 200,
+        "data": dict_data
     }
     return jsonify(response)
 
