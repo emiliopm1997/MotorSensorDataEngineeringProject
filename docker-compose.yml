@@ -37,3 +37,15 @@ services:
       - kafka
     volumes:
       - ./data:/app/data
+
+  credentials_validator:
+    build:
+      context: ./credentials_validator
+    ports:
+      - "5003:5003"
+
+  preprocessors:
+    build:
+      context: ./preprocessors
+    ports:
+      - "5004:5004"
