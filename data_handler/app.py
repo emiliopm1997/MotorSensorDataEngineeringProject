@@ -1,5 +1,5 @@
 from confluent_kafka import Consumer
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from pathlib import Path
 import time
 
@@ -7,6 +7,7 @@ import pandas as pd
 import requests
 
 from .data_base import DataLakeHandler, DataWarehouseHandler
+from .utils import ts_to_unix
 
 app = Flask(__name__)
 
@@ -33,6 +34,7 @@ def save_raw_data():
 
     response = {'message': 'Raw data is being saved...', 'status_code': 200}
     return jsonify(response)
+
 
 @app.route('/preprocess_data', methods=['GET'])
 def preprocess_data():
@@ -86,6 +88,34 @@ def preprocess_data():
     response = {
         'message': 'Preprocessed data is being saved...',
         'status_code': 200
+    }
+    return jsonify(response)
+
+
+@app.route('/retrieve_data_for_report', methods=['POST'])
+def retrieve_data_for_report():
+    """Get the data needed for reporting."""
+    dl = DataLakeHandler(DL_PATH)
+    dw = DataWarehouseHandler(DW_PATH)
+
+    # Get reference times.
+    data_dict = dict()
+    info_json = request.get_json()  # Get JSON data from the request
+    unix_start = ts_to_unix(pd.Timestamp(info_json["date_time_start"]))
+    unix_end = ts_to_unix(pd.Timestamp(info_json["date_time_end"]))
+
+    additionals1 = f"WHERE unix_time BETWEEN {unix_start} AND {unix_end}"
+    raw_data = dl.select("*", "MOTOR_READINGS", additionals1)
+    data_dict["raw_data"] = raw_data.to_dict("records")
+
+    additionals2 = f"WHERE ref_unix_time BETWEEN {unix_start} AND {unix_end}"
+    metrics_data = dw.select("*", "METRICS", additionals2)
+    data_dict["metrics_data"] = metrics_data.to_dict("records")
+
+    response = {
+        "message": "Data retrieved successfully ...",
+        "status_code": 200,
+        "data": data_dict
     }
     return jsonify(response)
 

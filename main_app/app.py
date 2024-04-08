@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 import json
 import requests
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -31,7 +32,20 @@ def start_pipeline():
         # Preprocess data and save it to data warehouse
         requests.get(DATA_HANDLER_URL.format("preprocess_data"))
 
-        # Serve data to report feeder
+        # Get data for report. This should be done by the front end.
+        # info_json = dict()
+        # info_json["date_time_start"] = (
+        #     pd.Timestamp.now() - pd.Timedelta(seconds=60)
+        # )
+        # info_json["date_time_end"] = (
+        #     pd.Timestamp.now() - pd.Timedelta(seconds=30)
+        # )
+        # data_dict = requests.post(
+        #     DATA_HANDLER_URL.format("retrieve_data_for_report"),
+        #     data=info_json
+        # )
+        # raw_data = pd.DataFrame(data_dict.json()["raw_data"])
+        # metrics_data = pd.DataFrame(data_dict.json()["metrics_data"])
 
     return jsonify({'message': 'All services started'})
 
