@@ -8,8 +8,7 @@ WORKDIR /src
 ENV CONDA_ENVIRONMENT py_env
 COPY environment.yml .
 
-RUN apt update
-RUN apt-get install build-essential
+RUN apt update && apt-get install build-essential -y
 RUN conda env create --file environment.yml && \
     echo "source activate ${CONDA_ENVIRONMENT}"  > ~/.bashrc && \
     conda clean --all -y

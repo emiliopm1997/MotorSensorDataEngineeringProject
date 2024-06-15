@@ -10,7 +10,7 @@ dependencies:
   - flask=3.0.2
   - isort=5.9
   - ipykernel=6.15
-  - confluent_kafka=2.3.0
+  - kafka-python=2.0.2
   - matplotlib=3.5
   - numpy=1.21
   - openpyxl=3.1

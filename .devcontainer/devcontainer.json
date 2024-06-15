@@ -1,15 +1,16 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.241.1/containers/docker-existing-dockerfile
 {
-	"name": "Python-Latex Container",
+	"name": "Python Container",
 	"dockerFile": "Dockerfile",
+	//"dockerComposeFile": "../docker-compose.yml",
 	// Use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker.
 	"customizations": {
 		// Configure properties specific to VS Code.
 		"vscode": {
 			// Set *default* container specific settings.json values on container create.
 			"settings": {
-				"autoDocstring.docstringFormat":"numpy",
+				"autoDocstring.docstringFormat": "numpy",
 				"autoDocstring.generateDocstringOnEnter": true,
 				"cSpell.enableFiletypes": [
 					"!python"
@@ -37,11 +38,11 @@
 				"njpwerner.autodocstring",
 				"aaron-bond.better-comments",
 				"humao.rest-client",
-				"ms-vscode.makefile-tools",
 				"tal7aouy.icons",
 				"ms-toolsai.jupyter",
 				"qwtel.sqlite-viewer",
-				"donjayamanne.python-extension-pack"
+				"donjayamanne.python-extension-pack",
+				"rangav.vscode-thunder-client"
 			]
 		}
 	},
