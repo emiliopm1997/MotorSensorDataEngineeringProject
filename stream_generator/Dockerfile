@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install confluent_kafka flask numpy
+RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 5001
 

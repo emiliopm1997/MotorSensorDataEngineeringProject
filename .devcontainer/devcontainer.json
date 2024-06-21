@@ -48,5 +48,7 @@
 	},
 	"mounts": [
 		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
-	]
+	],
+	"initializeCommand": "docker network inspect my_shared_network > /dev/null || docker network create my_shared_network --attachable",
+    "runArgs": ["--network=my_shared_network"]
 }

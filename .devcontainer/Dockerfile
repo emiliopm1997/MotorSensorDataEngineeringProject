@@ -3,6 +3,7 @@
 FROM continuumio/miniconda3
 
 WORKDIR /src
+EXPOSE 80
 
 # Setup basic conda environment
 ENV CONDA_ENVIRONMENT py_env
@@ -20,6 +21,7 @@ RUN rm -rf /src/*
 # Copy all contents
 WORKDIR /home
 COPY . /home
+
 CMD [ "bash"]
 
 ###############################
