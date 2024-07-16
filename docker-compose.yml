@@ -1,47 +1,30 @@
 version: '1'
 services:
-  zookeeper:
-    image: 'bitnami/zookeeper:latest'
-    container_name: 'zookeeper'
-    networks:
-      - motor_sensor_network
-    ports:
-      - '2181:2181'
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-    volumes:
-      - ../volumes/zookeeper_data:/bitnami/zookeeper/data
-      - ../volumes/zookeeper_logs:/bitnami/zookeeper/logs
-
   kafka:
     image: 'bitnami/kafka:latest'
-    container_name: 'kafka'
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
     networks:
       - motor_sensor_network
-    ports:
-      - '9093:9093'
-    environment:
-      - KAFKA_BROKER_ID=1
-      - KAFKA_LISTENERS=INTERNAL://:9092,EXTERNAL_SAME_HOST://0.0.0.0:9093 #used for initial connection
-      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://:9092,EXTERNAL_SAME_HOST://localhost:9093 #subsequent connection
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT
-      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-    depends_on:
-      - zookeeper
-    volumes:
-      - ../volumes/kafka_data_1:/bitnami/kafka
-
+  
   stream_generator:
-    container_name: 'stream_generator'
-    build: 
-      context: ./stream_generator
-      dockerfile: Dockerfile
+    container_name: 'sg_container'
+    build: ./stream_generator
     ports:
       - "5001:5001"
     depends_on:
       - kafka
+    environment:
+      KAFKA_BROKER: kafka:9092
+    networks:
+      - motor_sensor_network
+    volumes:
+      - ./logs:/var/log/stream_generator
 
 networks:
   motor_sensor_network:

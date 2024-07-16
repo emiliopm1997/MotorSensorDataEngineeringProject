@@ -24,4 +24,4 @@ COPY . /home
 
 EXPOSE 5001
 
-CMD [ "bash"]
+CMD ["python", "app.py"]
