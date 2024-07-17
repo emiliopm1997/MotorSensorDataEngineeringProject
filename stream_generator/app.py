@@ -26,7 +26,7 @@ def send_sensor_values():
     start = pd.Timestamp.now()
 
     # while True:
-    for x in range(10):
+    for x in range(3):
         LOGGER.info("Iteration {}".format(x))
         end = start + pd.Timedelta(seconds=15)
 

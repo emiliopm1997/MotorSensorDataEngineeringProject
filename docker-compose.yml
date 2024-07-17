@@ -1,6 +1,7 @@
 version: '1'
 services:
   kafka:
+    container_name: 'kafka_server'
     image: 'bitnami/kafka:latest'
     environment:
       - KAFKA_CFG_NODE_ID=0
@@ -25,6 +26,18 @@ services:
       - motor_sensor_network
     volumes:
       - ./logs:/var/log/stream_generator
+
+  orchestrator:
+    container_name: 'orchestrator_container'
+    build: ./orchestrator
+    ports:
+      - "5000:5000"
+    depends_on:
+      - stream_generator
+    networks:
+      - motor_sensor_network
+    volumes:
+      - ./logs:/var/log/orchestrator
 
 networks:
   motor_sensor_network:

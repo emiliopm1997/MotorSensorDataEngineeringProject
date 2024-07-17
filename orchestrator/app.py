@@ -2,6 +2,8 @@ from flask import Flask, jsonify
 import json
 import requests
 
+from logger import LOGGER
+
 app = Flask(__name__)
 
 STREAM_GENERATOR_URL = 'http://stream_generator:5001/start_generating_values'
@@ -13,23 +15,27 @@ VALIDATE_CREDENTIALS_URL = 'http://credentials_validator:5003/validate'
 def start_pipeline():
     """Start the pipeline."""
     # Start start stream generator
+    LOGGER.info("Starting stream generator...")
     requests.get(STREAM_GENERATOR_URL)
 
     # Validate credentials.
-    with open('config.json', 'r') as json_file:
-        credentials = json.load(json_file)
-    validation_results = requests.post(
-        VALIDATE_CREDENTIALS_URL, json=credentials
-    )
+    # with open('config.json', 'r') as json_file:
+    #     credentials = json.load(json_file)
+    # LOGGER.info("Validating credentials...")
+    # validation_results = requests.post(
+    #     VALIDATE_CREDENTIALS_URL, json=credentials
+    # )
 
-    if validation_results.status_code == 200:
-        print("Credentials are valid...")
+    # if validation_results.status_code == 200:
+    #     LOGGER.info("Credentials are valid...")
 
         # Read raw data and save to data lake
-        requests.get(DATA_HANDLER_URL.format("save_raw_data"))
+        # LOGGER.info("Reading and saving raw data...")
+        # requests.get(DATA_HANDLER_URL.format("save_raw_data"))
 
         # Preprocess data and save it to data warehouse
-        requests.get(DATA_HANDLER_URL.format("preprocess_data"))
+        # LOGGER.info("Preprocessing and saving data...")
+        # requests.get(DATA_HANDLER_URL.format("preprocess_data"))
 
         # Get data for report. This should be done by the front end.
         # info_json = dict()
