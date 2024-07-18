@@ -83,7 +83,7 @@ def get_voltage_data(start: pd.Timestamp, end: pd.Timestamp) -> pd.DataFrame:
 @app.route('/start_generating_values', methods=['GET'])
 def start_generating_values():
     """Generate sensor values."""
-    LOGGER.info("-" * 15)
+    LOGGER.info("-" * 30)
     LOGGER.info("Values will start to be generated.")
     # Start generating values in a background thread
     thread = threading.Thread(target=send_sensor_values)

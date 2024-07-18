@@ -1,0 +1,6 @@
+name: cred_validator_env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - flask=3.0.2

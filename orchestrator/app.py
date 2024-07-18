@@ -14,20 +14,22 @@ VALIDATE_CREDENTIALS_URL = 'http://credentials_validator:5003/validate'
 @app.route('/start_pipeline', methods=['GET'])
 def start_pipeline():
     """Start the pipeline."""
+    LOGGER.info("-" * 30)
+    
     # Start start stream generator
     LOGGER.info("Starting stream generator...")
     requests.get(STREAM_GENERATOR_URL)
 
     # Validate credentials.
-    # with open('config.json', 'r') as json_file:
-    #     credentials = json.load(json_file)
-    # LOGGER.info("Validating credentials...")
-    # validation_results = requests.post(
-    #     VALIDATE_CREDENTIALS_URL, json=credentials
-    # )
+    with open('config.json', 'r') as json_file:
+        credentials = json.load(json_file)
+    LOGGER.info("Validating credentials...")
+    validation_results = requests.post(
+        VALIDATE_CREDENTIALS_URL, json=credentials
+    )
 
-    # if validation_results.status_code == 200:
-    #     LOGGER.info("Credentials are valid...")
+    if validation_results.status_code == 200:
+        LOGGER.info("Credentials are valid...")
 
         # Read raw data and save to data lake
         # LOGGER.info("Reading and saving raw data...")
