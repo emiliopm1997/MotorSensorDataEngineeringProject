@@ -1,36 +1,84 @@
-from confluent_kafka import Consumer
+from kafka import KafkaConsumer
 from flask import Flask, jsonify, request
 from pathlib import Path
-import time
 
+import os
+import json
 import pandas as pd
 import requests
+import threading
+import time
+import traceback
 
-from .data_base import DataLakeHandler, DataWarehouseHandler
-from .utils import ts_to_unix
+from data_base import DataLakeHandler, DataWarehouseHandler
+from logger import LOGGER
+from utils import ts_to_unix
 
 app = Flask(__name__)
 
 KAFKA_SERVER = 'kafka:9092'
 TOPIC = 'motor_voltage'
-DL_PATH = Path('data/raw_data.db')
-DW_PATH = Path('data/preprocessed_data.db')
+
+DATA_DIR = Path('/var/lib/data_handler/data')
+DL_PATH = DATA_DIR / 'raw_data.db'
+DW_PATH = DATA_DIR / 'preprocessed_data.db'
+
+# Create data directory if it does not exist
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR)
 
 PREPROCESSOR_URL = 'http://preprocessor:5004/{}'
 
 
+def read_save_data():
+    """Read and save the data."""
+    dl = DataLakeHandler(DL_PATH)
+    table_name = "motor_voltage"
+    try:
+        consumer = KafkaConsumer(
+            bootstrap_servers=[KAFKA_SERVER], api_version=(2, 0, 2),
+            group_id="group1"
+        )
+        consumer.subscribe([TOPIC])
+        
+        # while True:
+        for _ in range(2):
+            point_lst = []
+            batch_size = 150
+        
+            LOGGER.info("Collecting {} data points...".format(batch_size))
+            count = 0
+            while count < batch_size:
+                msg = consumer.poll(max_records=1)
+                if not msg:
+                    continue
+                
+                data_p_byte = list(msg.values())[0][0].value
+                data_p = json.loads(data_p_byte.decode("utf-8"))
+                point_lst.append(data_p)
+                count += 1
+
+            data = pd.DataFrame(point_lst)
+            data.to_sql(table_name, dl.conn, if_exists="append", index=False)
+            LOGGER.info(
+                "Saved {} values to data lake...".format(len(data))
+            )
+
+    except Exception as e:
+        LOGGER.error(f"{e}\n{traceback.format_exc()}")
+        raise e
+        
+
 @app.route('/save_raw_data', methods=['GET'])
 def save_raw_data():
     """Read and save raw data."""
-    db = DataLakeHandler(DL_PATH)
-    table_name = "MOTOR_READINGS"
-
-    consumer = Consumer(TOPIC, bootstrap_servers=[KAFKA_SERVER])
-
-    for _ in range(5):
-        msg = consumer.poll(max_records=1000)
-        data = pd.DataFrame(msg.value.decode())
-        data.to_sql(table_name, db.conn, if_exists="append", index=False)
+    LOGGER.info("-" * 30)
+    LOGGER.info("Values will start to be read and saved...")
+    
+    # Read and save values in a background thread
+    thread = threading.Thread(target=read_save_data)
+    thread.daemon = True
+    thread.start()
 
     response = {'message': 'Raw data is being saved...', 'status_code': 200}
     return jsonify(response)

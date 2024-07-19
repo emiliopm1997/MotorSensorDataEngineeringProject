@@ -27,6 +27,21 @@ services:
     volumes:
       - ./logs:/var/log/stream_generator
 
+  data_handler:
+    container_name: 'dh_container'
+    build: ./data_handler
+    ports:
+      - "5002:5002"
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKER: kafka:9092
+    networks:
+      - motor_sensor_network
+    volumes:
+      - ./logs:/var/log/data_handler
+      - ./data:/var/lib/data_handler/data
+
   credentials_validator:
     container_name: 'cv_container'
     build: ./credentials_validator

@@ -1,5 +1,6 @@
 start:
-	docker-compose up --build
+	docker-compose up -d --build
+	docker exec -it orchestrator_container curl http://orchestrator:5000/start_pipeline
 
 test:
 	python -m unittest discover -v ./stream_generator

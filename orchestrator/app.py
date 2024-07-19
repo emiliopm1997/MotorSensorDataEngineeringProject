@@ -32,8 +32,8 @@ def start_pipeline():
         LOGGER.info("Credentials are valid...")
 
         # Read raw data and save to data lake
-        # LOGGER.info("Reading and saving raw data...")
-        # requests.get(DATA_HANDLER_URL.format("save_raw_data"))
+        LOGGER.info("Starting data collection and storage service...")
+        requests.get(DATA_HANDLER_URL.format("save_raw_data"))
 
         # Preprocess data and save it to data warehouse
         # LOGGER.info("Preprocessing and saving data...")

@@ -29,3 +29,4 @@ Run image in container
 docker run -it --network=<network_name> --name <container_name> <image_name>
 
 docker exec -it orchestrator_container curl http://orchestrator:5000/start_pipeline
+curl http://data_handler:5002/save_raw_data
