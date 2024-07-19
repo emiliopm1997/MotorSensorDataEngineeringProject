@@ -1,0 +1,8 @@
+name: preprocessor_env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - flask=3.0.2
+  - numpy=1.21
+  - pandas=1.4

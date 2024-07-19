@@ -163,3 +163,4 @@ cython_debug/
 notebooks/
 main_app/config.json
 credentials_validator/config.json
+data/*
