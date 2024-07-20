@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import List, Optional
 from abc import ABC
 
+from logger import LOGGER
+
 
 class AbstractDBHandler(ABC):
     """
@@ -11,23 +13,36 @@ class AbstractDBHandler(ABC):
 
     Attributes
     ----------
+    db_type : str
+        The of database one is dealing with.
+    db_template : Union[List[str], str]
+        The templates used to create the tables of the db.
     conn : :obj:`sqlite3.dbapi2.Connection`
         A 'Connection' object pointing to the data base.
     cur : :obj:`sqlite3.dbapi2.Cursor`
         A 'Cursor' object based on the previous connection.
     """
+    
+    db_type = ""
+    db_template = []
 
     def __init__(self, db_path: Path, set_structure: Optional[bool] = False):
         """Set instance attributes."""
+        db_exists = db_path.exists()
+        
         self.conn = sqlite3.connect(db_path)
         self.cur = self.conn.cursor()
-
-        # Check if db exists, if not set template.
-        if (not db_path.exists()) or set_structure:
+        
+        # Set templates if db doesn't exist.
+        if (not db_exists) or set_structure:
+            LOGGER.info(f"{self.db_type} doesn't exist. Setting tables...")
             if isinstance(self.db_template, str):
                 self.db_template = [self.db_template]
             for table in self.db_template:
                 self.cur.execute(table)
+                self.conn.commit()
+        else:
+            LOGGER.info(f"{self.db_type} exists. Continuing...")
 
     def insert(self, table: str, values: str):
         """Insert values to table.
@@ -104,8 +119,9 @@ class AbstractDBHandler(ABC):
 class DataLakeHandler(AbstractDBHandler):
     """Handler of database for raw data."""
 
+    db_type = "Data Lake"
     db_template = """
-        CREATE TABLE MOTOR_READINGS (
+        CREATE TABLE MOTOR_VOLTAGE (
             unix_time FLOAT NOT NULL PRIMARY KEY,
             date_time VARCHAR(30) NOT NULL,
             voltage FLOAT NOT NULL
@@ -121,7 +137,11 @@ class DataWarehouseHandler(AbstractDBHandler):
 
     latest_cycle_time : float
         The latest time that has been used to cut a cycle.
+    latest_cycle_id : int
+        The latest id that has been used for a cut cycle.
     """
+    
+    db_type = "Data Warehouse"
     db_template = [
         """
             CREATE TABLE CYCLES (
