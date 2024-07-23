@@ -36,8 +36,8 @@ def start_pipeline():
         requests.get(DATA_HANDLER_URL.format("save_raw_data"))
 
         # Preprocess data and save it to data warehouse
-        # LOGGER.info("Preprocessing and saving data...")
-        # requests.get(DATA_HANDLER_URL.format("preprocess_data"))
+        LOGGER.info("Starting data preprocessing and storing service...")
+        requests.get(DATA_HANDLER_URL.format("preprocess_data"))
 
         # Get data for report. This should be done by the front end.
         # info_json = dict()
@@ -53,8 +53,18 @@ def start_pipeline():
         # )
         # raw_data = pd.DataFrame(data_dict.json()["raw_data"])
         # metrics_data = pd.DataFrame(data_dict.json()["metrics_data"])
+        status_code = 200
+        message = "All services started."
+    else:
+        status_code = 400
+        error_msg = validation_results.json()["error"]
+        message = f"Error: {error_msg}"
 
-    return jsonify({'message': 'All services started'})
+    return (
+        jsonify(
+            {"message": message, "status_code": status_code}
+        ), status_code
+    )
 
 
 if __name__ == '__main__':

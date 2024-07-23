@@ -96,7 +96,7 @@ def start_generating_values():
     thread = threading.Thread(target=send_sensor_values)
     thread.daemon = True
     thread.start()
-    return jsonify({'message': 'Streaming data started'})
+    return jsonify({'message': 'Streaming data started'}), 200
 
 
 if __name__ == '__main__':

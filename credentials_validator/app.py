@@ -18,11 +18,13 @@ def validate():
     valid_password = true_credentials["password"]
 
     if username == valid_username and password == valid_password:
-        response = {'message': 'Login successful', 'status_code': 200}
+        status_code = 200
+        response = {'message': 'Login successful', 'status_code': status_code}
     else:
-        response = {'message': 'Invalid credentials', 'status_code': 401}
+        status_code = 401
+        response = {'error': 'Invalid credentials', 'status_code': status_code}
 
-    return jsonify(response)
+    return jsonify(response), status_code
 
 
 if __name__ == '__main__':

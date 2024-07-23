@@ -38,7 +38,7 @@ class TestDataLake(TestDBHandlers):
     data_class = DataLakeHandler
     prefix = "data_lake_"
     table_cols = ["unix_time", "date_time", "voltage"]
-    table_name = "MOTOR_READINGS"
+    table_name = "MOTOR_VOLTAGE"
 
     def _insert_test_data(self):
         start = 1710811768
