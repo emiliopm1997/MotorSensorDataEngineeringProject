@@ -21,7 +21,7 @@ TOPIC = 'motor_voltage'
 
 DATA_DIR = Path('/var/lib/data_handler/data')
 DL_PATH = DATA_DIR / 'raw_data.db'
-DW_PATH = DATA_DIR / 'preprocessed_data.db'
+DW_PATH = DATA_DIR / 'processed_data.db'
 
 DC_LOGGER = LOGGERS[0]  # Data consumer logger
 DP_LOGGER = LOGGERS[1]  # Data processor logger
@@ -31,7 +31,7 @@ DR_LOGGER = LOGGERS[2]  # Data retriever logger
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
-PREPROCESSOR_URL = 'http://preprocessors:5004/{}'
+PROCESSOR_URL = 'http://processors:5004/{}'
 
 # Table names
 raw_table_name = "MOTOR_VOLTAGE"
@@ -96,8 +96,8 @@ def save_raw_data():
         "status_code": status_code}
     return jsonify(response), status_code
 
-def _preprocess_save_data():
-    """Preprocesses and save the data."""
+def _process_save_data():
+    """Processes and saves the data."""
     try:
         DP_LOGGER.info("Connecting to data lake for reading...")
         dl = DataLakeHandler(DL_PATH)
@@ -122,7 +122,7 @@ def _preprocess_save_data():
             )
 
             if len(raw_data) == 0:
-                DP_LOGGER.info("No new data was found for preprocessing. Waiting...")
+                DP_LOGGER.info("No new data was found for processing. Waiting...")
                 time.sleep(15)
                 continue
 
@@ -135,7 +135,7 @@ def _preprocess_save_data():
             # Calculate cycles.
             DP_LOGGER.info("Calculating cycles for new data...")
             cycles_response = requests.post(
-                PREPROCESSOR_URL.format("calculate_cycles"), json=cycle_info
+                PROCESSOR_URL.format("calculate_cycles"), json=cycle_info
             )
             
             if cycles_response.status_code == 400:
@@ -155,7 +155,7 @@ def _preprocess_save_data():
             # Calculate metrics.
             DP_LOGGER.info("Calculating metrics for previous cycles...")
             metrics_response = requests.post(
-                PREPROCESSOR_URL.format("calculate_metrics"), json=cut_cycle_info
+                PROCESSOR_URL.format("calculate_metrics"), json=cut_cycle_info
             )
             if metrics_response.status_code == 400:
                 error_msg = metrics_response.json()["error"]
@@ -188,20 +188,20 @@ def _preprocess_save_data():
         DP_LOGGER.error(f"{e}\n{traceback.format_exc()}")
         raise e
 
-@app.route('/preprocess_data', methods=['GET'])
-def preprocess_data():
-    """Preprocess raw data and save it."""
+@app.route('/process_data', methods=['GET'])
+def process_data():
+    """Process raw data and save it."""
     DP_LOGGER.info("-" * 30)
-    DP_LOGGER.info("Values will start to be preprocessed and saved...")
+    DP_LOGGER.info("Values will start to be processed and saved...")
     
-    # Preprocess and save values in a background thread
-    thread = threading.Thread(target=_preprocess_save_data)
+    # Process and save values in a background thread
+    thread = threading.Thread(target=_process_save_data)
     thread.daemon = True
     thread.start()
 
     status_code = 200
     response = {
-        'message': 'Preprocessing and saving data...',
+        'message': 'Processing and saving data...',
         'status_code': status_code
     }
     return jsonify(response), status_code

@@ -5,7 +5,7 @@ import unittest
 from metrics import MetricsCalculator
 
 DATA_PATH = Path(
-    "/workspaces/MotorSensorDataEngineeringProject/preprocessors/test/data"
+    "/workspaces/MotorSensorDataEngineeringProject/processors/test/data"
 )
 
 
@@ -23,10 +23,10 @@ class TestMetricsCalculator(unittest.TestCase):
         )
 
     def test_run(self):
-        """Test that preprocessor runs as expected."""
-        preprocessor = MetricsCalculator()
-        preprocessor.run(data=self.raw_data)
-        result = preprocessor.preprocessed_data
+        """Test that processor runs as expected."""
+        processor = MetricsCalculator()
+        processor.run(data=self.raw_data)
+        result = processor.processed_data
         pd.testing.assert_frame_equal(result, self.metrics_data)
 
 

@@ -35,9 +35,9 @@ def start_pipeline():
         LOGGER.info("Starting data collection and storage service...")
         requests.get(DATA_HANDLER_URL.format("save_raw_data"))
 
-        # Preprocess data and save it to data warehouse
-        LOGGER.info("Starting data preprocessing and storing service...")
-        requests.get(DATA_HANDLER_URL.format("preprocess_data"))
+        # Process data and save it to data warehouse
+        LOGGER.info("Starting data processing and storing service...")
+        requests.get(DATA_HANDLER_URL.format("process_data"))
 
         # Get data for report. This should be done by the front end.
         # info_json = dict()

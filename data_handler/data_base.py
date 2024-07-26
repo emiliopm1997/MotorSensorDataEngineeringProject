@@ -130,7 +130,7 @@ class DataLakeHandler(AbstractDBHandler):
 
 
 class DataWarehouseHandler(AbstractDBHandler):
-    """Handler of database for preprocessed data.
+    """Handler of database for processed data.
 
     Attributes
     ----------

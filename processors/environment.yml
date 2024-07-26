@@ -1,4 +1,4 @@
-name: preprocessor_env
+name: processor_env
 channels:
   - defaults
   - conda-forge

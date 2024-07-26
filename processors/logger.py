@@ -4,8 +4,8 @@ import os
 from pathlib import Path
 
 # Set up logging
-log_dir = Path('/var/log/preprocessors')
-log_file = log_dir / 'preprocessors.log'
+log_dir = Path('/var/log/processors')
+log_file = log_dir / 'processors.log'
 
 # Create log directory if it does not exist
 if not os.path.exists(log_dir):

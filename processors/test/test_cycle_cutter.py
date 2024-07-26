@@ -5,7 +5,7 @@ import unittest
 from cycles import CycleCutter
 
 DATA_PATH = Path(
-    "/workspaces/MotorSensorDataEngineeringProject/preprocessors/test/data"
+    "/workspaces/MotorSensorDataEngineeringProject/processors/test/data"
 )
 
 
@@ -23,11 +23,11 @@ class TestCycleCutter(unittest.TestCase):
         cls.cycle_periods["cycle_end"] = cls.cycle_periods["cycle_end"]\
             .apply(pd.Timestamp)
 
-        cls.preprocessed_data = pd.read_csv(
+        cls.processed_data = pd.read_csv(
             DATA_PATH / "cut_cycles_data.csv"
         )
-        cls.preprocessed_data["date_time"] = (
-            cls.preprocessed_data["date_time"].apply(pd.Timestamp)
+        cls.processed_data["date_time"] = (
+            cls.processed_data["date_time"].apply(pd.Timestamp)
         )
 
     def test_get_cycle_beginning_and_end(self):
@@ -38,37 +38,37 @@ class TestCycleCutter(unittest.TestCase):
     def test_cut_cycles(self):
         """Test that the cycles are cut as expected."""
         result = CycleCutter.cut_cycles(self.raw_data, self.cycle_periods)
-        pd.testing.assert_frame_equal(result, self.preprocessed_data)
+        pd.testing.assert_frame_equal(result, self.processed_data)
 
     def test_run(self):
-        """Test that preprocessor runs as expected."""
-        preprocessor = CycleCutter()
-        preprocessor.run(data=self.raw_data)
-        result = preprocessor.preprocessed_data
+        """Test that processor runs as expected."""
+        processor = CycleCutter()
+        processor.run(data=self.raw_data)
+        result = processor.processed_data
 
-        pd.testing.assert_frame_equal(result, self.preprocessed_data)
+        pd.testing.assert_frame_equal(result, self.processed_data)
 
         # Check that 9 cycles are cut.
         max_id = sorted(result["cycle_id"].unique())[-1]
         self.assertEqual(max_id, 8)
 
     def test_run_data_starts_within_cycle(self):
-        """Test that preprocessor runs excludes incomplete cycle (start)."""
+        """Test that processor runs excludes incomplete cycle (start)."""
         raw_data = self.raw_data.copy(deep=True).iloc[10:, :]
-        preprocessor = CycleCutter()
-        preprocessor.run(data=raw_data)
-        result = preprocessor.preprocessed_data
+        processor = CycleCutter()
+        processor.run(data=raw_data)
+        result = processor.processed_data
 
         # Check that 8 cycles are cut.
         max_id = sorted(result["cycle_id"].unique())[-1]
         self.assertEqual(max_id, 7)
 
     def test_run_data_ends_within_cycle(self):
-        """Test that preprocessor runs excludes incomplete cycle (end)."""
+        """Test that processor runs excludes incomplete cycle (end)."""
         raw_data = self.raw_data.copy(deep=True).iloc[:-8, :]
-        preprocessor = CycleCutter()
-        preprocessor.run(data=raw_data)
-        result = preprocessor.preprocessed_data
+        processor = CycleCutter()
+        processor.run(data=raw_data)
+        result = processor.processed_data
 
         # Check that 8 cycles are cut.
         max_id = sorted(result["cycle_id"].unique())[-1]

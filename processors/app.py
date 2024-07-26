@@ -19,11 +19,11 @@ def calculate_cycles():
         data = pd.DataFrame(cycle_info["data"])
 
         LOGGER.info("Cutting cycles...")
-        preprocessor = CycleCutter()
-        preprocessor.run(data=data, cycle_id_start=cycle_id_start)
-        preprocessed_data = preprocessor.preprocessed_data
+        processor = CycleCutter()
+        processor.run(data=data, cycle_id_start=cycle_id_start)
+        processed_data = processor.processed_data
         
-        if len(preprocessed_data) == 0:
+        if len(processed_data) == 0:
             status_code = 204
             response = {
                 "message": "No cycles found for cutting...",
@@ -32,15 +32,15 @@ def calculate_cycles():
             }
             return jsonify(response), status_code
             
-        preprocessed_data["date_time"] = preprocessed_data["date_time"].apply(
+        processed_data["date_time"] = processed_data["date_time"].apply(
             lambda x: str(x)
         )
         
         LOGGER.info("Number of cut cycles: {}".format(
-            len(preprocessed_data["cycle_id"].unique())
+            len(processed_data["cycle_id"].unique())
         ))
 
-        dict_data = preprocessed_data.to_dict("records")
+        dict_data = processed_data.to_dict("records")
 
         status_code = 200
         response = {
@@ -66,15 +66,15 @@ def calculate_metrics():
         data = pd.DataFrame(cut_cycle_info["data"])
 
         LOGGER.info("Calculating metrics...")
-        preprocessor = MetricsCalculator()
-        preprocessor.run(data=data)
-        preprocessed_data = preprocessor.preprocessed_data
+        processor = MetricsCalculator()
+        processor.run(data=data)
+        processed_data = processor.processed_data
 
         LOGGER.info(
             "Metrics have been calculated for {} cycles...".format(
-                len(preprocessed_data["cycle_id"].unique())
+                len(processed_data["cycle_id"].unique())
         ))
-        dict_data = preprocessed_data.to_dict("records")
+        dict_data = processed_data.to_dict("records")
 
         response = {
             "message": "Metrics calculated successfully...",

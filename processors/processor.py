@@ -3,16 +3,16 @@ import pandas as pd
 from abc import ABC, abstractclassmethod
 
 
-class Preprocessor(ABC):
-    """General preprocessor class."""
+class Processor(ABC):
+    """General processor class."""
 
     @abstractclassmethod
     def run(cls, **kwargs) -> pd.DataFrame:
-        """Preprocess the data.
+        """Process the data.
 
         Returns
         -------
         pd.DataFrame
-            The preprocessed data.
+            The processed data.
         """
         raise NotImplementedError

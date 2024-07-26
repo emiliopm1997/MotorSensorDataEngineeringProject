@@ -2,10 +2,10 @@ import pandas as pd
 from typing import List, Optional
 
 from logger import LOGGER
-from preprocessor import Preprocessor
+from processor import Processor
 
 
-class CycleCutter(Preprocessor):
+class CycleCutter(Processor):
     """Cut the cycles based on the raw data."""
 
     voltage_threshold = 4  # kV
@@ -13,12 +13,12 @@ class CycleCutter(Preprocessor):
 
     @classmethod
     def run(cls, **kwargs) -> pd.DataFrame:
-        """Preprocess the data.
+        """Process the data.
 
         Returns
         -------
         pd.DataFrame
-            The preprocessed data.
+            The processed data.
         """
         data = kwargs.get("data")
         data["date_time"] = data["date_time"].apply(pd.Timestamp)
@@ -28,7 +28,7 @@ class CycleCutter(Preprocessor):
             data, cycle_id_start
         )
 
-        cls.preprocessed_data = cls.cut_cycles(data, cycle_periods_data)
+        cls.processed_data = cls.cut_cycles(data, cycle_periods_data)
 
     @classmethod
     def get_cycle_beginnings_and_endings(

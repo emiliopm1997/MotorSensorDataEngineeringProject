@@ -7,7 +7,7 @@ WORKDIR /src
 RUN apt-get update && apt-get install curl -y
 
 # Setup basic conda environment
-ENV CONDA_ENVIRONMENT preprocessor_env
+ENV CONDA_ENVIRONMENT processor_env
 COPY environment.yml .
 
 RUN conda env create --file environment.yml && \

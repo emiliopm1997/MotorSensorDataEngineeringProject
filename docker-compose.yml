@@ -34,7 +34,7 @@ services:
       - "5002:5002"
     depends_on:
       - kafka
-      - preprocessors
+      - processors
     environment:
       KAFKA_BROKER: kafka:9092
     networks:
@@ -51,15 +51,15 @@ services:
     networks:
       - motor_sensor_network
   
-  preprocessors:
-    container_name: 'preproc_container'
-    build: ./preprocessors
+  processors:
+    container_name: 'proc_container'
+    build: ./processors
     ports:
       - "5004:5004"
     networks:
       - motor_sensor_network
     volumes:
-      - ./logs:/var/log/preprocessors
+      - ./logs:/var/log/processors
 
   orchestrator:
     container_name: 'orchestrator_container'

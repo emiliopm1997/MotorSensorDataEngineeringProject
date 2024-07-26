@@ -4,7 +4,7 @@ import pandas as pd
 from abc import ABC, abstractmethod
 from typing import List
 
-from preprocessor import Preprocessor
+from processor import Processor
 
 
 class Metric(ABC):
@@ -65,30 +65,30 @@ class RMS(Metric):
         )
 
 
-class MetricsCalculator(Preprocessor):
+class MetricsCalculator(Processor):
     """Calculate the metrics on the cut cycles."""
 
     metric_classes = [MaxPoint, Median, RMS]
 
     @classmethod
     def run(cls, **kwargs) -> pd.DataFrame:
-        """Preprocess the data.
+        """Process the data.
 
         Returns
         -------
         pd.DataFrame
-            The preprocessed data.
+            The processed data.
         """
         data = kwargs.get("data")
-        preprocessed_data = pd.DataFrame()
+        processed_data = pd.DataFrame()
 
         for cycle_id in data["cycle_id"].unique():
             metric_df = cls._get_metrics_data(data, cycle_id)
-            preprocessed_data = pd.concat(
-                [preprocessed_data, metric_df], axis=0, ignore_index=True
+            processed_data = pd.concat(
+                [processed_data, metric_df], axis=0, ignore_index=True
             )
 
-        cls.preprocessed_data = preprocessed_data
+        cls.processed_data = processed_data
 
     @staticmethod
     def _get_metric_ids(cycle_id: int, length: int) -> List[int]:
