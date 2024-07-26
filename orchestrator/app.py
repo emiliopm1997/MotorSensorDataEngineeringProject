@@ -49,10 +49,10 @@ def start_pipeline():
         # )
         # data_dict = requests.post(
         #     DATA_HANDLER_URL.format("retrieve_data_for_report"),
-        #     data=info_json
+        #     json=info_json
         # )
-        # raw_data = pd.DataFrame(data_dict.json()["raw_data"])
-        # metrics_data = pd.DataFrame(data_dict.json()["metrics_data"])
+        # raw_data = pd.DataFrame(data_dict.json()["data"]["raw_data"])
+        # metrics_data = pd.DataFrame(data_dict.json()["data"]["metrics_data"])
         status_code = 200
         message = "All services started."
     else:

@@ -11,13 +11,18 @@ log_file = log_dir / 'data_handler.log'
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
-# Set up logging
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.INFO)
+# Set up loggers
+logger_names = ["data_consumer", "data_processor", "data_retriever"]
 formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+LOGGERS = []
 
-file_handler = logging.FileHandler(log_file)
-file_handler.setLevel(logging.INFO)
-file_handler.setFormatter(formatter)
+for logger_name in logger_names:
+    LOGGER = logging.getLogger(logger_name)
+    LOGGER.setLevel(logging.DEBUG)
 
-LOGGER.addHandler(file_handler)
+    file_handler = logging.FileHandler(log_dir / f"{logger_name}.log")
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+
+    LOGGER.addHandler(file_handler)
+    LOGGERS.append(LOGGER)

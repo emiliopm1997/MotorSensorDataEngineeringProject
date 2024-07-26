@@ -11,7 +11,7 @@ import time
 import traceback
 
 from data_base import DataLakeHandler, DataWarehouseHandler
-from logger import LOGGER
+from logger import LOGGERS
 from utils import ts_to_unix
 
 app = Flask(__name__)
@@ -23,6 +23,10 @@ DATA_DIR = Path('/var/lib/data_handler/data')
 DL_PATH = DATA_DIR / 'raw_data.db'
 DW_PATH = DATA_DIR / 'preprocessed_data.db'
 
+DC_LOGGER = LOGGERS[0]  # Data consumer logger
+DP_LOGGER = LOGGERS[1]  # Data processor logger
+DR_LOGGER = LOGGERS[2]  # Data retriever logger
+
 # Create data directory if it does not exist
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
@@ -31,12 +35,14 @@ PREPROCESSOR_URL = 'http://preprocessors:5004/{}'
 
 # Table names
 raw_table_name = "MOTOR_VOLTAGE"
+cycles_table_name = "CYCLES"
+metrics_table_name = "METRICS"
 
 
 def _read_save_data():
     """Read and save the data."""
     try:
-        LOGGER.info("Connecting to data lake for writing...")
+        DC_LOGGER.info("Connecting to data lake for writing...")
         dl = DataLakeHandler(DL_PATH)
         consumer = KafkaConsumer(
             bootstrap_servers=[KAFKA_SERVER], api_version=(2, 0, 2),
@@ -44,18 +50,16 @@ def _read_save_data():
         )
         consumer.subscribe([TOPIC])
         
-        #! Change this at the end
-        # while True:
-        for _ in range(2):
+        while True:
             point_lst = []
             batch_size = 150
         
-            LOGGER.info("Collecting {} raw data points...".format(batch_size))
+            DC_LOGGER.info("Collecting {} raw data points...".format(batch_size))
             count = 0
             while count < batch_size:
                 msg = consumer.poll(max_records=1)
                 if not msg:
-                    LOGGER.info("No messages found. Waiting 5 seconds...")
+                    DC_LOGGER.info("No messages found. Waiting 5 seconds...")
                     time.sleep(5)
                     continue
                 
@@ -66,20 +70,20 @@ def _read_save_data():
 
             data = pd.DataFrame(point_lst)
             data.to_sql(raw_table_name, dl.conn, if_exists="append", index=False)
-            LOGGER.info(
+            DC_LOGGER.info(
                 "Saved {} values to data lake...".format(len(data))
             )
 
     except Exception as e:
-        LOGGER.error(f"{e}\n{traceback.format_exc()}")
+        DC_LOGGER.error(f"{e}\n{traceback.format_exc()}")
         raise e
         
 
 @app.route('/save_raw_data', methods=['GET'])
 def save_raw_data():
     """Read and save raw data."""
-    LOGGER.info("-" * 30)
-    LOGGER.info("Values will start to be read and saved...")
+    DC_LOGGER.info("-" * 30)
+    DC_LOGGER.info("Values will start to be read and saved...")
     
     # Read and save values in a background thread
     thread = threading.Thread(target=_read_save_data)
@@ -95,15 +99,12 @@ def save_raw_data():
 def _preprocess_save_data():
     """Preprocesses and save the data."""
     try:
-        LOGGER.info("Connecting to data lake for reading...")
+        DP_LOGGER.info("Connecting to data lake for reading...")
         dl = DataLakeHandler(DL_PATH)
-        LOGGER.info("Connecting to data warehouse for writing...")
+        DP_LOGGER.info("Connecting to data warehouse for writing...")
         dw = DataWarehouseHandler(DW_PATH)
 
-        #! Change this at the end
-        count = 0
-        while count < 2:
-        #while True:
+        while True:
 
             # Prepare data for cycles.
             cycle_info = dict()
@@ -121,7 +122,7 @@ def _preprocess_save_data():
             )
 
             if len(raw_data) == 0:
-                LOGGER.info("No new data was found for preprocessing. Waiting...")
+                DP_LOGGER.info("No new data was found for preprocessing. Waiting...")
                 time.sleep(15)
                 continue
 
@@ -129,10 +130,10 @@ def _preprocess_save_data():
                 latest_cycle_id + 1 if latest_cycle_id else 0
             )
             cycle_info["data"] = raw_data.to_dict("records")
-            LOGGER.info("New data was found ({} rows)...".format(len(cycle_info["data"])))
+            DP_LOGGER.info("New data was found ({} rows)...".format(len(cycle_info["data"])))
 
             # Calculate cycles.
-            LOGGER.info("Calculating cycles for new data...")
+            DP_LOGGER.info("Calculating cycles for new data...")
             cycles_response = requests.post(
                 PREPROCESSOR_URL.format("calculate_cycles"), json=cycle_info
             )
@@ -143,7 +144,7 @@ def _preprocess_save_data():
                     f"Error cutting cycles: {error_msg}"
                 )
             elif cycles_response.status_code == 204:
-                LOGGER.info("No cycles were found in raw data...")
+                DP_LOGGER.info("No cycles were found in raw data...")
                 time.sleep(15)
                 continue
 
@@ -152,7 +153,7 @@ def _preprocess_save_data():
             cut_cycle_info["data"] = cycle_data
 
             # Calculate metrics.
-            LOGGER.info("Calculating metrics for previous cycles...")
+            DP_LOGGER.info("Calculating metrics for previous cycles...")
             metrics_response = requests.post(
                 PREPROCESSOR_URL.format("calculate_metrics"), json=cut_cycle_info
             )
@@ -162,36 +163,36 @@ def _preprocess_save_data():
                     f"Error calculating metrics: {error_msg}"
                 )
             metrics_data = metrics_response.json()["data"]
-            LOGGER.info(f"Total metrics calculated: {len(metrics_data)}")
+            DP_LOGGER.info(f"Total metrics calculated: {len(metrics_data)}")
 
             # Save data.
             cut_cycles_df = pd.DataFrame(cycle_data)
             cut_cycles_df.to_sql(
-                "CYCLES", dw.conn, if_exists="append", index=False
+                cycles_table_name, dw.conn, if_exists="append", index=False
             )
-            LOGGER.info(
+            DP_LOGGER.info(
                 "Saved {} cycles to data warehouse...".format(
                     len(cut_cycles_df["cycle_id"].unique())
                 )
             )
             metrics_df = pd.DataFrame(metrics_data)
             metrics_df.to_sql(
-                "METRICS", dw.conn, if_exists="append", index=False
+                metrics_table_name, dw.conn, if_exists="append", index=False
             )
-            LOGGER.info(
+            DP_LOGGER.info(
                 "Saved metrics of {} cycles to data warehouse...".format(
                     len(cut_cycles_df["cycle_id"].unique())
                 )
             )
-            count += 1
     except Exception as e:
-        LOGGER.error(f"{e}\n{traceback.format_exc()}")
+        DP_LOGGER.error(f"{e}\n{traceback.format_exc()}")
         raise e
 
 @app.route('/preprocess_data', methods=['GET'])
 def preprocess_data():
     """Preprocess raw data and save it."""
-    LOGGER.info("Values will start to be preprocessed and saved...")
+    DP_LOGGER.info("-" * 30)
+    DP_LOGGER.info("Values will start to be preprocessed and saved...")
     
     # Preprocess and save values in a background thread
     thread = threading.Thread(target=_preprocess_save_data)
@@ -209,29 +210,40 @@ def preprocess_data():
 @app.route('/retrieve_data_for_report', methods=['POST'])
 def retrieve_data_for_report():
     """Get the data needed for reporting."""
-    dl = DataLakeHandler(DL_PATH)
-    dw = DataWarehouseHandler(DW_PATH)
+    try:
+        DR_LOGGER.info("Connecting to data lake for reading...")
+        dl = DataLakeHandler(DL_PATH)
+        DR_LOGGER.info("Connecting to data warehouse for reading...")
+        dw = DataWarehouseHandler(DW_PATH)
 
-    # Get reference times.
-    data_dict = dict()
-    info_json = request.get_json()  # Get JSON data from the request
-    unix_start = ts_to_unix(pd.Timestamp(info_json["date_time_start"]))
-    unix_end = ts_to_unix(pd.Timestamp(info_json["date_time_end"]))
+        # Get reference times.
+        data_dict = dict()
+        info_json = request.get_json()  # Get JSON data from the request
+        unix_start = ts_to_unix(pd.Timestamp(info_json["date_time_start"]))
+        unix_end = ts_to_unix(pd.Timestamp(info_json["date_time_end"]))
 
-    additionals1 = f"WHERE unix_time BETWEEN {unix_start} AND {unix_end}"
-    raw_data = dl.select("*", "MOTOR_READINGS", additionals1)
-    data_dict["raw_data"] = raw_data.to_dict("records")
+        additionals1 = f"WHERE unix_time BETWEEN {unix_start} AND {unix_end}"
+        raw_data = dl.select("*", raw_table_name, additionals1)
+        data_dict["raw_data"] = raw_data.to_dict("records")
 
-    additionals2 = f"WHERE ref_unix_time BETWEEN {unix_start} AND {unix_end}"
-    metrics_data = dw.select("*", "METRICS", additionals2)
-    data_dict["metrics_data"] = metrics_data.to_dict("records")
+        additionals2 = f"WHERE ref_unix_time BETWEEN {unix_start} AND {unix_end}"
+        metrics_data = dw.select("*", metrics_table_name, additionals2)
+        data_dict["metrics_data"] = metrics_data.to_dict("records")
 
-    status_code = 200
-    response = {
-        "message": "Data retrieved successfully ...",
-        "status_code": status_code,
-        "data": data_dict
-    }
+        status_code = 200
+        response = {
+            "message": "Data retrieved successfully ...",
+            "status_code": status_code,
+            "data": data_dict
+        }
+    except Exception as e:
+        DR_LOGGER.error(f"{e}\n{traceback.format_exc()}")
+        status_code = 400
+        response = {
+            "error": f"{e}\n{traceback.format_exc()}",
+            "status_code": status_code
+        }
+        
     return jsonify(response), status_code
 
 
