@@ -19,13 +19,11 @@ def main():
     )
     
     # Catch errors in request.
-    if result.status_code == 400:
+    if result.status_code in [400, 404]:
         error_msg = result.json()["error"]
-        print(f"Error: {error_msg}")
-        return
-    elif result.status_code == 204:
-        msg = result.json()["message"]
-        print(f"{msg}")
+        if result.status_code == 404:
+            error_msg += ". Try again soon."
+        print(f"Error ({result.status_code}): {error_msg}")
         return
     
     # This is the way to retrieve data for a dashboard.

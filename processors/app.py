@@ -24,10 +24,9 @@ def calculate_cycles():
         processed_data = processor.processed_data
         
         if len(processed_data) == 0:
-            status_code = 204
+            status_code = 404
             response = {
-                "message": "No cycles found for cutting...",
-                "data": [],
+                "error": "No cycles found for cutting...",
                 "status_code": status_code
             }
             return jsonify(response), status_code

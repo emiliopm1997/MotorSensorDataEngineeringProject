@@ -127,7 +127,7 @@ def _process_save_data():
                 continue
 
             cycle_info["cycle_id_start"] = (
-                latest_cycle_id + 1 if latest_cycle_id else 0
+                latest_cycle_id + 1 if latest_cycle_id is not None else 0
             )
             cycle_info["data"] = raw_data.to_dict("records")
             DP_LOGGER.info("New data was found ({} rows)...".format(len(cycle_info["data"])))
@@ -143,7 +143,7 @@ def _process_save_data():
                 raise ValueError(
                     f"Error cutting cycles: {error_msg}"
                 )
-            elif cycles_response.status_code == 204:
+            elif cycles_response.status_code == 404:
                 DP_LOGGER.info("No cycles were found in raw data...")
                 time.sleep(15)
                 continue
@@ -237,9 +237,9 @@ def retrieve_data_for_report():
                 str(ts_start), str(ts_end)
             )
             DR_LOGGER.warning(msg)
-            status_code = 204
+            status_code = 404
             response = {
-                "message": msg,
+                "error": msg,
                 "status_code": status_code
             }
             return jsonify(response), status_code
@@ -256,9 +256,9 @@ def retrieve_data_for_report():
                 str(ts_start), str(ts_end)
             )
             DR_LOGGER.warning(msg)
-            status_code = 204
+            status_code = 404
             response = {
-                "message": msg,
+                "error": msg,
                 "status_code": status_code
             }
             return jsonify(response), status_code
