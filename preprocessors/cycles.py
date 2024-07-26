@@ -1,6 +1,7 @@
 import pandas as pd
 from typing import List, Optional
 
+from logger import LOGGER
 from preprocessor import Preprocessor
 
 
@@ -48,6 +49,11 @@ class CycleCutter(Preprocessor):
         """
         data["date_time"] = data["date_time"].apply(pd.Timestamp)
         data_h_voltage = data[data["voltage"] > cls.voltage_threshold]
+        
+        # This strictly occurs when there are no high voltages.
+        if data_h_voltage.empty:
+            LOGGER.warning("There are no cycles within the data...")
+            return pd.DataFrame()
 
         # Check if is incomplete.
         exclude_last_cycle = (
@@ -59,6 +65,11 @@ class CycleCutter(Preprocessor):
             data_h_voltage.copy(True),
             exclude_last_cycle
         )
+        
+        # This could occur when a cycle is incomplete
+        if (len(cycle_starts) == 0) or (len(cycle_ends) == 0):
+            LOGGER.warning("There are no cycles within the data...")
+            return pd.DataFrame()
 
         return cls._get_periods_data(
             cycle_starts, cycle_ends, cycle_id_start

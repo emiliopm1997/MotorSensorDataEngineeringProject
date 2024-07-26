@@ -1,6 +1,12 @@
 # MotorSensorDataEngineeringProject
 This project is for a master's degree course in data engineering. It simulates the voltage data of a medium motor and its path through different objects and modules, all the way to a reporting microservice.
 
+Things that can be improved:
+- Credentials validator is overly simplistic
+- Raw data validations
+- API unittests
+- Improve API codes
+- Generalize data base modules for multiple signals
 
 Notes:
 

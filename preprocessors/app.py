@@ -22,23 +22,39 @@ def calculate_cycles():
         preprocessor = CycleCutter()
         preprocessor.run(data=data, cycle_id_start=cycle_id_start)
         preprocessed_data = preprocessor.preprocessed_data
+        
+        if len(preprocessed_data) == 0:
+            status_code = 204
+            response = {
+                "message": "No cycles found for cutting...",
+                "data": [],
+                "status_code": status_code
+            }
+            return jsonify(response), status_code
+            
         preprocessed_data["date_time"] = preprocessed_data["date_time"].apply(
             lambda x: str(x)
         )
         
-        LOGGER.info("Cut cycles:\n{}".format(preprocessed_data))
+        LOGGER.info("Number of cut cycles: {}".format(
+            len(preprocessed_data["cycle_id"].unique())
+        ))
 
         dict_data = preprocessed_data.to_dict("records")
 
+        status_code = 200
         response = {
             "message": "Cycles cut successfully...",
-            "data": dict_data
+            "data": dict_data,
+            "status_code": status_code
         }
-        status_code = 200
     except Exception as e:
         LOGGER.error(f"{e}\n{traceback.format_exc()}")
-        response = {"error": f"{e}\n{traceback.format_exc()}"}
         status_code = 400
+        response = {
+            "error": f"{e}\n{traceback.format_exc()}",
+            "status_code": status_code
+        }
     return jsonify(response), status_code
 
 
@@ -54,7 +70,10 @@ def calculate_metrics():
         preprocessor.run(data=data)
         preprocessed_data = preprocessor.preprocessed_data
 
-        LOGGER.info("Calculated metrics:\n{}".format(preprocessed_data))
+        LOGGER.info(
+            "Metrics have been calculated for {} cycles...".format(
+                len(preprocessed_data["cycle_id"].unique())
+        ))
         dict_data = preprocessed_data.to_dict("records")
 
         response = {

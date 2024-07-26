@@ -27,6 +27,7 @@ def send_sensor_values():
     try:
         start = pd.Timestamp.now()
 
+        #! Change this at the end
         # while True:
         for x in range(2):
             LOGGER.info("Iteration {}".format(x))
@@ -96,7 +97,11 @@ def start_generating_values():
     thread = threading.Thread(target=send_sensor_values)
     thread.daemon = True
     thread.start()
-    return jsonify({'message': 'Streaming data started'}), 200
+    status_code = 200
+    return (
+        jsonify({'message': 'Streaming data started', "status_code": status_code}),
+        status_code
+    )
 
 
 if __name__ == '__main__':

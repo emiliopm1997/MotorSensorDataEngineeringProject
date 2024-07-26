@@ -172,7 +172,9 @@ class DataWarehouseHandler(AbstractDBHandler):
         if len(data) == 0:
             return None
 
-        return data.loc[0].values[0]
+        # The last method is so that it is stored in a native
+        # Python type.
+        return data.loc[0].values[0].item()
 
     @property
     def latest_cycle_id(self) -> int:
@@ -182,4 +184,6 @@ class DataWarehouseHandler(AbstractDBHandler):
         if len(data) == 0:
             return None
 
-        return data.loc[0].values[0]
+        # The last method is so that it is stored in a native
+        # Python type.
+        return data.loc[0].values[0].item()
