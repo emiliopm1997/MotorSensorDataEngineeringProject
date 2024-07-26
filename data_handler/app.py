@@ -216,18 +216,52 @@ def retrieve_data_for_report():
         DR_LOGGER.info("Connecting to data warehouse for reading...")
         dw = DataWarehouseHandler(DW_PATH)
 
+        
         # Get reference times.
+        DR_LOGGER.info("Retreiving request info ...")
         data_dict = dict()
         info_json = request.get_json()  # Get JSON data from the request
-        unix_start = ts_to_unix(pd.Timestamp(info_json["date_time_start"]))
-        unix_end = ts_to_unix(pd.Timestamp(info_json["date_time_end"]))
+        ts_start = pd.Timestamp(info_json.get("date_time_start"))
+        ts_end = pd.Timestamp(info_json.get("date_time_end"))
+        unix_start = ts_to_unix(ts_start)
+        unix_end = ts_to_unix(ts_end)
 
+        # Get raw data.
+        DR_LOGGER.info(
+            "Getting raw data between {} and {}...".format(ts_start, ts_end)
+        )
         additionals1 = f"WHERE unix_time BETWEEN {unix_start} AND {unix_end}"
         raw_data = dl.select("*", raw_table_name, additionals1)
+        if len(raw_data) == 0:
+            msg = "No raw data was found between {} and {}.".format(
+                str(ts_start), str(ts_end)
+            )
+            DR_LOGGER.warning(msg)
+            status_code = 204
+            response = {
+                "message": msg,
+                "status_code": status_code
+            }
+            return jsonify(response), status_code
         data_dict["raw_data"] = raw_data.to_dict("records")
 
+        # Get metrics data.
+        DR_LOGGER.info(
+            "Getting cycle metrics between {} and {}...".format(ts_start, ts_end)
+        )
         additionals2 = f"WHERE ref_unix_time BETWEEN {unix_start} AND {unix_end}"
         metrics_data = dw.select("*", metrics_table_name, additionals2)
+        if len(metrics_data) == 0:
+            msg = "No metrics data was found between {} and {}.".format(
+                str(ts_start), str(ts_end)
+            )
+            DR_LOGGER.warning(msg)
+            status_code = 204
+            response = {
+                "message": msg,
+                "status_code": status_code
+            }
+            return jsonify(response), status_code
         data_dict["metrics_data"] = metrics_data.to_dict("records")
 
         status_code = 200

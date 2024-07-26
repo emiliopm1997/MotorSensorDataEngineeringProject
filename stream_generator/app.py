@@ -27,16 +27,14 @@ def send_sensor_values():
     try:
         start = pd.Timestamp.now()
 
-        #! Change this at the end
-        # while True:
-        for x in range(2):
-            LOGGER.info("Iteration {}".format(x))
+        while True:
+            LOGGER.info("New iteration...")
             end = start + pd.Timedelta(seconds=15)
 
             # Get data and convert it.
             data = get_voltage_data(start, end)
             messages = data.to_dict("records")
-            LOGGER.info("{} rows will be sent.".format(len(data)))
+            LOGGER.info("{} rows will be sent...".format(len(data)))
 
             # Send stream data point by point.
             for msg in messages:
