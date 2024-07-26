@@ -7,8 +7,8 @@ def main():
     # Get data for report. This should be done by the front end.
     print("Setting periods ...")
     info_json = dict()
-    ts_start = pd.Timestamp.now() - pd.Timedelta(seconds=60)
-    ts_end = pd.Timestamp.now() - pd.Timedelta(seconds=30)
+    ts_start = pd.Timestamp.now() - pd.Timedelta(seconds=45)
+    ts_end = pd.Timestamp.now() - pd.Timedelta(seconds=15)
     info_json["date_time_start"] = str(ts_start)
     info_json["date_time_end"] = str(ts_end)
     

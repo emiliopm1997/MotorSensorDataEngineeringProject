@@ -39,8 +39,6 @@ def send_sensor_values():
             # Send stream data point by point.
             for msg in messages:
                 producer.send(TOPIC, json.dumps(msg).encode("utf-8"))
-            producer.flush()
-            LOGGER.info("{} data points sent...".format(len(data)))
 
             start = end
             now = pd.Timestamp.now()
@@ -48,6 +46,9 @@ def send_sensor_values():
                 t_diff_s = (end - now).total_seconds()
                 LOGGER.info("Waiting {} seconds...".format(t_diff_s))
                 time.sleep(t_diff_s)  # Wait until the current time is reached.
+
+            producer.flush()
+            LOGGER.info("{} data points sent...".format(len(data)))
     except Exception as e:
         LOGGER.error(f"{e}\n{traceback.format_exc()}")
         raise e
