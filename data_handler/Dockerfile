@@ -6,11 +6,14 @@ WORKDIR /src
 # Install curl for requests
 RUN apt-get update && apt-get install curl -y
 
+# Install mamba
+RUN conda install -c conda-forge mamba
+
 # Setup basic conda environment
 ENV CONDA_ENVIRONMENT data_h_env
 COPY environment.yml .
 
-RUN conda env create --file environment.yml && \
+RUN mamba env create --file environment.yml && \
     echo "source activate ${CONDA_ENVIRONMENT}"  > ~/.bashrc && \
     conda clean --all -y
 ENV PATH /opt/conda/envs/${CONDA_ENVIRONMENT}/bin:$PATH
