@@ -1,7 +1,7 @@
-import pandas as pd
-from pathlib import Path
 import unittest
+from pathlib import Path
 
+import pandas as pd
 from cycles import CycleCutter
 
 DATA_PATH = Path(
@@ -18,14 +18,14 @@ class TestCycleCutter(unittest.TestCase):
         cls.raw_data = pd.read_csv(DATA_PATH / "raw_data_for_test.csv")
 
         cls.cycle_periods = pd.read_csv(DATA_PATH / "cycle_periods.csv")
-        cls.cycle_periods["cycle_start"] = cls.cycle_periods["cycle_start"]\
-            .apply(pd.Timestamp)
-        cls.cycle_periods["cycle_end"] = cls.cycle_periods["cycle_end"]\
-            .apply(pd.Timestamp)
-
-        cls.processed_data = pd.read_csv(
-            DATA_PATH / "cut_cycles_data.csv"
+        cls.cycle_periods["cycle_start"] = cls.cycle_periods[
+            "cycle_start"
+        ].apply(pd.Timestamp)
+        cls.cycle_periods["cycle_end"] = cls.cycle_periods["cycle_end"].apply(
+            pd.Timestamp
         )
+
+        cls.processed_data = pd.read_csv(DATA_PATH / "cut_cycles_data.csv")
         cls.processed_data["date_time"] = (
             cls.processed_data["date_time"].apply(pd.Timestamp)
         )
@@ -75,5 +75,5 @@ class TestCycleCutter(unittest.TestCase):
         self.assertEqual(max_id, 7)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

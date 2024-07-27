@@ -1,6 +1,6 @@
-import pandas as pd
-
 from abc import ABC, abstractclassmethod
+
+import pandas as pd
 
 
 class Processor(ABC):

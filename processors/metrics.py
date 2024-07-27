@@ -1,9 +1,8 @@
 import math
-import pandas as pd
-
 from abc import ABC, abstractmethod
 from typing import List
 
+import pandas as pd
 from processor import Processor
 
 
@@ -92,13 +91,11 @@ class MetricsCalculator(Processor):
 
     @staticmethod
     def _get_metric_ids(cycle_id: int, length: int) -> List[int]:
-        suffixes = [
-            f"0{x}"[-2:] for x in range(1, length + 1)
-        ]
+        suffixes = [f"0{x}"[-2:] for x in range(1, length + 1)]
         return [int(f"{cycle_id}{suffix}") for suffix in suffixes]
 
     @classmethod
-    def _calculate_metrics(cls, data: pd.DataFrame) -> List['Metric']:
+    def _calculate_metrics(cls, data: pd.DataFrame) -> List["Metric"]:
         metrics = []
         for metric_class in cls.metric_classes:
             metric = metric_class(data)
@@ -109,35 +106,25 @@ class MetricsCalculator(Processor):
 
     @classmethod
     def _get_metrics_data(
-        cls,
-        data: pd.DataFrame,
-        cycle_id: int
+        cls, data: pd.DataFrame, cycle_id: int
     ) -> pd.DataFrame:
         data_portion = data[data["cycle_id"] == cycle_id]
         ref_unix_time = (
-            data_portion["unix_time"].max()
-            + data_portion["unix_time"].min()
+            data_portion["unix_time"].max() + data_portion["unix_time"].min()
         ) / 2
 
-        ref_date_time = str(pd.to_datetime(ref_unix_time, unit='s'))
-        
+        ref_date_time = str(pd.to_datetime(ref_unix_time, unit="s"))
+
         metrics = cls._calculate_metrics(data_portion)
-        
+
         metric_df = pd.DataFrame(
             {
-                "metric_id": cls._get_metric_ids(
-                    cycle_id, len(metrics)
-                ),
+                "metric_id": cls._get_metric_ids(cycle_id, len(metrics)),
                 "cycle_id": [cycle_id for _ in range(len(metrics))],
-                "ref_unix_time": [
-                    ref_unix_time for _ in range(len(metrics))
-                ],
-                "ref_date_time": [
-                    ref_date_time for _ in range(len(metrics))
-                ],
+                "ref_unix_time": [ref_unix_time for _ in range(len(metrics))],
+                "ref_date_time": [ref_date_time for _ in range(len(metrics))],
                 "metric_name": [metric.name for metric in metrics],
                 "metric_value": [metric.value for metric in metrics],
             }
         )
         return metric_df
-

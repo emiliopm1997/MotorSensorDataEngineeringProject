@@ -1,6 +1,6 @@
-import pandas as pd
 from typing import List, Optional
 
+import pandas as pd
 from logger import LOGGER
 from processor import Processor
 
@@ -49,7 +49,7 @@ class CycleCutter(Processor):
         """
         data["date_time"] = data["date_time"].apply(pd.Timestamp)
         data_h_voltage = data[data["voltage"] > cls.voltage_threshold]
-        
+
         # This strictly occurs when there are no high voltages.
         if data_h_voltage.empty:
             LOGGER.warning("There are no cycles within the data...")
@@ -62,48 +62,35 @@ class CycleCutter(Processor):
 
         cycle_starts = cls._get_cycle_starts(data_h_voltage.copy(True))
         cycle_ends = cls._get_cycle_ends(
-            data_h_voltage.copy(True),
-            exclude_last_cycle
+            data_h_voltage.copy(True), exclude_last_cycle
         )
-        
+
         # This could occur when a cycle is incomplete
         if (len(cycle_starts) == 0) or (len(cycle_ends) == 0):
             LOGGER.warning("There are no cycles within the data...")
             return pd.DataFrame()
 
-        return cls._get_periods_data(
-            cycle_starts, cycle_ends, cycle_id_start
-        )
+        return cls._get_periods_data(cycle_starts, cycle_ends, cycle_id_start)
 
     @classmethod
     def _get_cycle_starts(cls, cycle_df: pd.DataFrame) -> List[pd.Timestamp]:
         """Get a list of all the cycles' starting points."""
         cycle_df["lagged_ts_f"] = cycle_df["date_time"].shift(1)
-        cycle_df["diff_ts_f"] = (
-            cycle_df["date_time"] - cycle_df["lagged_ts_f"]
-        )
+        cycle_df["diff_ts_f"] = cycle_df["date_time"] - cycle_df["lagged_ts_f"]
         cycle_starts = cycle_df[
-            cycle_df["diff_ts_f"] > pd.Timedelta(
-                seconds=cls.time_threshold
-            )
+            cycle_df["diff_ts_f"] > pd.Timedelta(seconds=cls.time_threshold)
         ]["date_time"].to_list()
         return cycle_starts
 
     @classmethod
     def _get_cycle_ends(
-        cls,
-        cycle_df: pd.DataFrame,
-        exclude_last_cycle: Optional[bool] = False
+        cls, cycle_df: pd.DataFrame, exclude_last_cycle: Optional[bool] = False
     ) -> List[pd.Timestamp]:
         """Get a list of all the cycles' ending points."""
         cycle_df["lagged_ts_b"] = cycle_df["date_time"].shift(-1)
-        cycle_df["diff_ts_b"] = (
-            cycle_df["lagged_ts_b"] - cycle_df["date_time"]
-        )
+        cycle_df["diff_ts_b"] = cycle_df["lagged_ts_b"] - cycle_df["date_time"]
         cycle_ends = cycle_df[
-            cycle_df["diff_ts_b"] > pd.Timedelta(
-                seconds=cls.time_threshold
-            )
+            cycle_df["diff_ts_b"] > pd.Timedelta(seconds=cls.time_threshold)
         ]["date_time"].to_list()
 
         # So last cycle is not excluded unless it is incomplete.
@@ -116,7 +103,7 @@ class CycleCutter(Processor):
         cls,
         cycle_starts: List[pd.Timestamp],
         cycle_ends: List[pd.Timestamp],
-        id_start: int
+        id_start: int,
     ) -> pd.DataFrame:
         """Merge the information and assign an id.
 
@@ -149,16 +136,14 @@ class CycleCutter(Processor):
             {
                 "cycle_id": ids,
                 "cycle_start": cycle_starts,
-                "cycle_end": cycle_ends
+                "cycle_end": cycle_ends,
             }
         )
         return df_periods
 
     @classmethod
     def cut_cycles(
-        cls,
-        data: pd.DataFrame,
-        cycle_period_data: pd.DataFrame
+        cls, data: pd.DataFrame, cycle_period_data: pd.DataFrame
     ) -> pd.DataFrame:
         """Cut the data cycles.
 
@@ -181,20 +166,26 @@ class CycleCutter(Processor):
             cycle_id = row["cycle_id"]
             start = row["cycle_start"]
             end = row["cycle_end"]
-            filtering_cond = (
-                (data["date_time"] >= start) & (data["date_time"] <= end)
+            filtering_cond = (data["date_time"] >= start) & (
+                data["date_time"] <= end
             )
             cycle_data = data[filtering_cond]
             cycles_data = pd.concat(
                 [
                     cycles_data,
-                    pd.DataFrame({
-                        "unix_time": cycle_data["unix_time"].to_list(),
-                        "date_time": cycle_data["date_time"].to_list(),
-                        "cycle_id": [cycle_id for _ in range(len(cycle_data))],
-                        "voltage": cycle_data["voltage"].to_list()
-                    })
-                ], axis=0, ignore_index=True
+                    pd.DataFrame(
+                        {
+                            "unix_time": cycle_data["unix_time"].to_list(),
+                            "date_time": cycle_data["date_time"].to_list(),
+                            "cycle_id": [
+                                cycle_id for _ in range(len(cycle_data))
+                            ],
+                            "voltage": cycle_data["voltage"].to_list(),
+                        }
+                    ),
+                ],
+                axis=0,
+                ignore_index=True,
             )
 
         return cycles_data

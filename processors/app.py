@@ -1,16 +1,15 @@
-from flask import Flask, jsonify, request
-
-from cycles import CycleCutter
-from metrics import MetricsCalculator
-from logger import LOGGER
+import traceback
 
 import pandas as pd
-import traceback
+from cycles import CycleCutter
+from flask import Flask, jsonify, request
+from logger import LOGGER
+from metrics import MetricsCalculator
 
 app = Flask(__name__)
 
 
-@app.route('/calculate_cycles', methods=['POST'])
+@app.route("/calculate_cycles", methods=["POST"])
 def calculate_cycles():
     """Calculate the cycles using the raw data."""
     try:
@@ -22,22 +21,24 @@ def calculate_cycles():
         processor = CycleCutter()
         processor.run(data=data, cycle_id_start=cycle_id_start)
         processed_data = processor.processed_data
-        
+
         if len(processed_data) == 0:
             status_code = 404
             response = {
                 "error": "No cycles found for cutting...",
-                "status_code": status_code
+                "status_code": status_code,
             }
             return jsonify(response), status_code
-            
+
         processed_data["date_time"] = processed_data["date_time"].apply(
             lambda x: str(x)
         )
-        
-        LOGGER.info("Number of cut cycles: {}".format(
-            len(processed_data["cycle_id"].unique())
-        ))
+
+        LOGGER.info(
+            "Number of cut cycles: {}".format(
+                len(processed_data["cycle_id"].unique())
+            )
+        )
 
         dict_data = processed_data.to_dict("records")
 
@@ -45,19 +46,19 @@ def calculate_cycles():
         response = {
             "message": "Cycles cut successfully...",
             "data": dict_data,
-            "status_code": status_code
+            "status_code": status_code,
         }
     except Exception as e:
         LOGGER.error(f"{e}\n{traceback.format_exc()}")
         status_code = 400
         response = {
             "error": f"{e}\n{traceback.format_exc()}",
-            "status_code": status_code
+            "status_code": status_code,
         }
     return jsonify(response), status_code
 
 
-@app.route('/calculate_metrics', methods=['POST'])
+@app.route("/calculate_metrics", methods=["POST"])
 def calculate_metrics():
     """Calculate multiple metrics using the cycle data."""
     try:
@@ -72,12 +73,13 @@ def calculate_metrics():
         LOGGER.info(
             "Metrics have been calculated for {} cycles...".format(
                 len(processed_data["cycle_id"].unique())
-        ))
+            )
+        )
         dict_data = processed_data.to_dict("records")
 
         response = {
             "message": "Metrics calculated successfully...",
-            "data": dict_data
+            "data": dict_data,
         }
         status_code = 200
     except Exception as e:
@@ -87,5 +89,5 @@ def calculate_metrics():
     return jsonify(response), status_code
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5004)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5004)
