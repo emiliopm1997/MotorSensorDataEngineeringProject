@@ -1,6 +1,6 @@
-import pandas as pd
 import unittest
 
+import pandas as pd
 from helper_functions import ts_to_unix, unix_to_ts
 
 
@@ -11,14 +11,14 @@ class TestTimeHelpers(unittest.TestCase):
         """Test unix conversion to timestamp."""
         ut = 1708740464
         ts = unix_to_ts(ut)
-        self.assertEqual(ts, pd.Timestamp('2024-02-24 02:07:44'))
+        self.assertEqual(ts, pd.Timestamp("2024-02-24 02:07:44"))
 
     def test_ts_to_unix(self):
         """Test timestamp conversion to unix."""
-        ts = pd.Timestamp('2024-02-24 02:07:44')
+        ts = pd.Timestamp("2024-02-24 02:07:44")
         ut = ts_to_unix(ts)
         self.assertEqual(ut, 1708740464)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

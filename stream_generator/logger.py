@@ -1,11 +1,10 @@
 import logging
 import os
-
 from pathlib import Path
 
 # Set up logging
-log_dir = Path('/var/log/stream_generator')
-log_file = log_dir / 'stream_generator.log'
+log_dir = Path("/var/log/stream_generator")
+log_file = log_dir / "stream_generator.log"
 
 # Create log directory if it does not exist
 if not os.path.exists(log_dir):
@@ -14,7 +13,7 @@ if not os.path.exists(log_dir):
 # Set up logging
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
 
 file_handler = logging.FileHandler(log_file)
 file_handler.setLevel(logging.INFO)

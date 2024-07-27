@@ -1,7 +1,7 @@
-import numpy as np
-
 from dataclasses import dataclass
 from typing import Optional
+
+import numpy as np
 
 
 @dataclass
@@ -25,9 +25,7 @@ class VoltageSensorSimulator:
         return 2 * np.pi / self.t_cycle
 
     def simulate(
-        self,
-        t: np.ndarray,
-        noise: Optional[bool] = True
+        self, t: np.ndarray, noise: Optional[bool] = True
     ) -> np.ndarray:
         """Simulate the based on a timestamp in unix.
 

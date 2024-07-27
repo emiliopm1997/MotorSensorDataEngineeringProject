@@ -1,21 +1,20 @@
 import json
-import numpy as np
-import pandas as pd
 import threading
 import time
 import traceback
 
-from kafka import KafkaProducer
+import numpy as np
+import pandas as pd
 from flask import Flask, jsonify
-
 from helper_functions import ts_to_unix, unix_to_ts
+from kafka import KafkaProducer
 from logger import LOGGER
 from voltage_simulator import VoltageSensorSimulator
 
 app = Flask(__name__)
 
-KAFKA_SERVER = 'kafka:9092'
-TOPIC = 'motor_voltage'
+KAFKA_SERVER = "kafka:9092"
+TOPIC = "motor_voltage"
 
 producer = KafkaProducer(
     bootstrap_servers=[KAFKA_SERVER], api_version=(2, 0, 2)
@@ -72,11 +71,9 @@ def get_voltage_data(start: pd.Timestamp, end: pd.Timestamp) -> pd.DataFrame:
     data = pd.DataFrame()
 
     # Set unix and timestamp data.
-    data["unix_time"] = np.linspace(
-        ts_to_unix(start),
-        ts_to_unix(end),
-        151
-    )[:-1]
+    data["unix_time"] = np.linspace(ts_to_unix(start), ts_to_unix(end), 151)[
+        :-1
+    ]
     data["date_time"] = data["unix_time"].apply(unix_to_ts).astype(str)
 
     # Simulate data
@@ -86,7 +83,7 @@ def get_voltage_data(start: pd.Timestamp, end: pd.Timestamp) -> pd.DataFrame:
     return data
 
 
-@app.route('/start_generating_values', methods=['GET'])
+@app.route("/start_generating_values", methods=["GET"])
 def start_generating_values():
     """Generate sensor values."""
     LOGGER.info("-" * 30)
@@ -98,10 +95,12 @@ def start_generating_values():
     thread.start()
     status_code = 200
     return (
-        jsonify({'message': 'Streaming data started', "status_code": status_code}),
-        status_code
+        jsonify(
+            {"message": "Streaming data started", "status_code": status_code}
+        ),
+        status_code,
     )
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001)
