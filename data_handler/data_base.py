@@ -1,9 +1,9 @@
-import pandas as pd
 import sqlite3
+from abc import ABC
 from pathlib import Path
 from typing import List, Optional
-from abc import ABC
 
+import pandas as pd
 from logger import LOGGER
 
 
@@ -22,17 +22,17 @@ class AbstractDBHandler(ABC):
     cur : :obj:`sqlite3.dbapi2.Cursor`
         A 'Cursor' object based on the previous connection.
     """
-    
+
     db_type = ""
     db_template = []
 
     def __init__(self, db_path: Path, set_structure: Optional[bool] = False):
         """Set instance attributes."""
         db_exists = db_path.exists()
-        
+
         self.conn = sqlite3.connect(db_path)
         self.cur = self.conn.cursor()
-        
+
         # Set templates if db doesn't exist.
         if (not db_exists) or set_structure:
             LOGGER.info(f"{self.db_type} doesn't exist. Setting tables...")
@@ -134,13 +134,12 @@ class DataWarehouseHandler(AbstractDBHandler):
 
     Attributes
     ----------
-
     latest_cycle_time : float
         The latest time that has been used to cut a cycle.
     latest_cycle_id : int
         The latest id that has been used for a cut cycle.
     """
-    
+
     db_type = "Data Warehouse"
     db_template = [
         """
@@ -161,7 +160,7 @@ class DataWarehouseHandler(AbstractDBHandler):
                 metric_value FLOAT NOT NULL
             );
 
-        """
+        """,
     ]
 
     @property

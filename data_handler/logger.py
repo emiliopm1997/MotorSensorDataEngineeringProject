@@ -1,11 +1,10 @@
 import logging
 import os
-
 from pathlib import Path
 
 # Set up logging
-log_dir = Path('/var/log/data_handler')
-log_file = log_dir / 'data_handler.log'
+log_dir = Path("/var/log/data_handler")
+log_file = log_dir / "data_handler.log"
 
 # Create log directory if it does not exist
 if not os.path.exists(log_dir):
@@ -13,7 +12,7 @@ if not os.path.exists(log_dir):
 
 # Set up loggers
 logger_names = ["data_consumer", "data_processor", "data_retriever"]
-formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
 LOGGERS = []
 
 for logger_name in logger_names:
