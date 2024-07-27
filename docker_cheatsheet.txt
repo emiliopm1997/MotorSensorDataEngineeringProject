@@ -1,0 +1,25 @@
+Useful commands:
+
+Start services
+docker compose up -d --build
+
+Shut down services
+docker compose down
+
+Check running containers
+docker ps
+
+Inspect network
+docker network inspect <network_name>
+
+Remove network
+docker network rm <network_name>    
+
+Stop container
+docker stop <container_name>
+
+Build individual image
+docker build -t <image_name> <dockerfile_path>
+
+Run image in container
+docker run -it --network=<network_name> --name <container_name> <image_name>
