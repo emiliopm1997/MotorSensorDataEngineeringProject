@@ -3,7 +3,6 @@
 FROM continuumio/miniconda3
 
 WORKDIR /src
-EXPOSE 80
 
 # Setup basic conda environment
 ENV CONDA_ENVIRONMENT py_env
